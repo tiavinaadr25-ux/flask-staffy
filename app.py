@@ -2,7 +2,6 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Identifiants fixes (pas de base de données pour l'instant)
 EMAIL = "manager@staffly.com"
 MOT_DE_PASSE = "staffly123"
 
@@ -14,7 +13,6 @@ def login():
 def connexion():
     email = request.form['email']
     mdp = request.form['mdp']
-
     if email == EMAIL and mdp == MOT_DE_PASSE:
         return render_template('bravo.html')
     else:
@@ -22,4 +20,3 @@ def connexion():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
