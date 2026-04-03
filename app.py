@@ -1,22 +1,52 @@
-from flask import Flask, render_template, request
+import os
+from flask import Flask, render_template, request, session, redirect, url_for
+from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key")
+bcrypt = Bcrypt(app)
 
-EMAIL = "manager@staffly.com"
-MOT_DE_PASSE = "staffly123"
+# Manager credentials loaded from environment variables (never hardcoded)
+MANAGER_EMAIL: str = os.getenv("MANAGER_EMAIL", "")
+MANAGER_PASSWORD_HASH: str = os.getenv("MANAGER_PASSWORD_HASH", "")
 
-@app.route('/')
+
+def is_logged_in() -> bool:
+    """Check if the manager is currently logged in via session."""
+    return session.get("logged_in", False)
+
+
+@app.route("/")
 def login():
-    return render_template('login.html')
+    """Display the login page. Redirect to dashboard if already logged in."""
+    if is_logged_in():
+        return redirect(url_for("dashboard"))
+    return render_template("login.html")
 
-@app.route('/connexion', methods=['POST'])
+
+@app.route("/connexion", methods=["POST"])
 def connexion():
-    email = request.form['email']
-    mdp = request.form['mdp']
-    if email == EMAIL and mdp == MOT_DE_PASSE:
-        return render_template('bravo.html')
-    else:
-        return render_template('login.html', erreur="Email ou mot de passe incorrect !")
+    """Handle login form submission and verify credentials."""
+    email: str = request.form.get("email", "")
+    mdp: str = request.form.get("mdp", "")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    # Verify email and bcrypt-hashed password
+    if email == MANAGER_EMAIL and bcrypt.check_password_hash(
+        MANAGER_PASSWORD_HASH, mdp
+    ):
+        session["logged_in"] = True
+        session["email"] = email
+        return redirect(url_for("dashboard"))
+
+    return render_template(
+        "login.html", erreur="Email ou mot de passe incorrect !"
+    )
+
+
+@app.route("/dashboard")
+def dashboard():
+    """Display the dashboard. Requires authentication."""
