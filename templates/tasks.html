@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks | Staffly{% endblock %}
+
+{% block content %}
+  <section class="content-section">
+    <div class="container">
+      <div class="card page-header split-header">
+        <div>
+          <p class="eyebrow">SQL data access</p>
+          <h1>Tasks</h1>
+          <p class="page-intro">Track operational tasks for your team.</p>
+        </div>
+        <a class="button button-primary" href="{{ url_for('task_create') }}">Add task</a>
+      </div>
+
+      <div class="card table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Employee</th>
+              <th>Status</th>
+              <th>Due date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+              <tr>
+                <td>{{ task.title }}</td>
+                <td>{{ task.employee.full_name if task.employee else "-" }}</td>
+                <td><span class="badge">{{ task.status }}</span></td>
+                <td>{{ task.due_date.isoformat() if task.due_date else "-" }}</td>
+                <td class="actions-cell">
+                  <a href="{{ url_for('task_edit', task_id=task.id) }}">Edit</a>
+                  <form method="POST" action="{{ url_for('task_delete', task_id=task.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+                    <button class="inline-button danger-link" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5">No task created yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+{% endblock %}

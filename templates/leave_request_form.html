@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Add Leave Request | Staffly{% endblock %}
+
+{% block content %}
+  <section class="form-section">
+    <div class="container form-wrapper">
+      <div class="card form-card">
+        <p class="eyebrow">Leave management</p>
+        <h1>Add leave request</h1>
+
+        <form method="POST" class="form-layout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+
+          <label for="employee_id">Employee</label>
+          <select id="employee_id" name="employee_id" required>
+            <option value="">Choose an employee</option>
+            {% for employee in employees %}
+              <option value="{{ employee.id }}">{{ employee.full_name }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="start_date">Start date</label>
+          <input id="start_date" name="start_date" type="date" required />
+
+          <label for="end_date">End date</label>
+          <input id="end_date" name="end_date" type="date" required />
+
+          <label for="reason">Reason</label>
+          <textarea id="reason" name="reason" rows="4"></textarea>
+
+          <button class="button button-primary" type="submit">Save leave request</button>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}

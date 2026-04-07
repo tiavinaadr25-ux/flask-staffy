@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Staffly | Restaurant Team Management{% endblock %}
+
+{% block content %}
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-copy card">
+        <p class="eyebrow">RNCP Bloc 2 project</p>
+        <h1>Manage restaurant teams with one secure web application.</h1>
+        <p class="hero-text">
+          Staffly is designed for restaurant managers who need one place to
+          centralize staff information, daily tasks, and leave requests.
+        </p>
+        <div class="button-row">
+          <a class="button button-primary" href="{{ url_for('login') }}">Open manager login</a>
+          <a class="button button-secondary" href="{{ url_for('dashboard') }}">See dashboard</a>
+        </div>
+      </div>
+
+      <div class="hero-panel card">
+        <h2>Current project snapshot</h2>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="metric-value">{{ manager_count }}</span>
+            <span class="metric-label">manager account(s)</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-value">{{ employee_count }}</span>
+            <span class="metric-label">employee record(s)</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-value">{{ task_count }}</span>
+            <span class="metric-label">task record(s)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="container card-grid">
+      <article class="card">
+        <h2>What this MVP covers</h2>
+        <ul class="clean-list">
+          <li>Secure manager login</li>
+          <li>Employee management</li>
+          <li>Task assignment and follow-up</li>
+          <li>Leave request monitoring</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Why this matters for RNCP Bloc 2</h2>
+        <ul class="clean-list">
+          <li>Dynamic server-side features</li>
+          <li>Relational database design</li>
+          <li>SQL data access</li>
+          <li>Deployment-ready architecture</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+{% endblock %}

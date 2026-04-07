@@ -6,3 +6,8 @@ venv/
 .venv/
 .venv-1/
 *.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+instance/
+staffly_dev.db

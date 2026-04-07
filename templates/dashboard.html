@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Staffly | Dashboard{% endblock %}
+
+{% block content %}
+  <section class="content-section">
+    <div class="container">
+      <div class="card page-header">
+        <p class="eyebrow">Connected manager</p>
+        <h1>{{ manager.full_name }}</h1>
+        <p class="page-intro">
+          Welcome to {{ manager.restaurant_name }}. This dashboard summarizes your team activity.
+        </p>
+      </div>
+
+      <div class="stats-grid">
+        <article class="card stat-card">
+          <span class="metric-value">{{ employee_count }}</span>
+          <span class="metric-label">employee(s)</span>
+        </article>
+        <article class="card stat-card">
+          <span class="metric-value">{{ task_count }}</span>
+          <span class="metric-label">task(s)</span>
+        </article>
+        <article class="card stat-card">
+          <span class="metric-value">{{ leave_request_count }}</span>
+          <span class="metric-label">leave request(s)</span>
+        </article>
+      </div>
+
+      <div class="card-grid">
+        <article class="card">
+          <div class="section-head">
+            <h2>Recent employees</h2>
+            <a href="{{ url_for('employees') }}">See all</a>
+          </div>
+          <ul class="clean-list">
+            {% for employee in employees %}
+              <li>{{ employee.full_name }} - {{ employee.role_title }}</li>
+            {% else %}
+              <li>No employee yet.</li>
+            {% endfor %}
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <h2>Recent tasks</h2>
+            <a href="{{ url_for('tasks') }}">See all</a>
+          </div>
+          <ul class="clean-list">
+            {% for task in tasks %}
+              <li>{{ task.title }} - {{ task.status }}</li>
+            {% else %}
+              <li>No task yet.</li>
+            {% endfor %}
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <h2>Leave requests</h2>
+            <a href="{{ url_for('leave_requests') }}">See all</a>
+          </div>
+          <ul class="clean-list">
+            {% for leave_request in leave_requests %}
+              <li>{{ leave_request.employee.full_name }} - {{ leave_request.status }}</li>
+            {% else %}
+              <li>No leave request yet.</li>
+            {% endfor %}
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+{% endblock %}

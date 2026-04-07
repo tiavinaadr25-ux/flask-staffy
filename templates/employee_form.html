@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{% if employee %}Edit employee{% else %}Add employee{% endif %} | Staffly{% endblock %}
+
+{% block content %}
+  <section class="form-section">
+    <div class="container form-wrapper">
+      <div class="card form-card">
+        <p class="eyebrow">Employee management</p>
+        <h1>{% if employee %}Edit employee{% else %}Add employee{% endif %}</h1>
+
+        <form method="POST" class="form-layout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+
+          <label for="full_name">Full name</label>
+          <input id="full_name" name="full_name" type="text" value="{{ employee.full_name if employee else '' }}" required />
+
+          <label for="role_title">Role</label>
+          <input id="role_title" name="role_title" type="text" value="{{ employee.role_title if employee else '' }}" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" value="{{ employee.email if employee else '' }}" />
+
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="text" value="{{ employee.phone if employee else '' }}" />
+
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            {% set current_status = employee.status if employee else 'active' %}
+            <option value="active" {% if current_status == 'active' %}selected{% endif %}>active</option>
+            <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>inactive</option>
+          </select>
+
+          <button class="button button-primary" type="submit">Save employee</button>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}

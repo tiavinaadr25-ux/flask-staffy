@@ -1,0 +1,12 @@
+Date,Focus,Taches a terminer ce jour,Resultat attendu
+"2026-04-07","Cadrage et organisation","Definir le MVP, repartir les roles, creer les branches Git, mettre en place le Kanban Notion","Feuille de route claire et organisation de l'equipe"
+"2026-04-08","Fondations techniques","Configurer le projet, ajouter les variables d'environnement, mettre en place Black, Flake8, pre-commit, demarrer PostgreSQL local, realiser le zoning Figma","Projet configure et base technique propre"
+"2026-04-09","Base de donnees et authentification","Creer les modeles SQLAlchemy, connecter la base, developper le login et la session, realiser les wireframes","Base reliee au back-end et authentification fonctionnelle"
+"2026-04-10","Fonctionnalites coeur","Developper le CRUD Employe, le CRUD Tache, ajouter le typage et corriger le lien front/back","MVP fonctionnel sur les ecrans principaux"
+"2026-04-11","Qualite et conception","Developper les demandes d'absence, ecrire les tests pytest, finaliser les mockups, creer la page equipe, preparer le formulaire Tally","Application testee et maquettes finalisees"
+"2026-04-12","Architecture et modelisation","Creer l'UML, le MCD, le LMD, le MPD, le dictionnaire de donnees et la preuve Hugging Face","Diagrammes techniques et preuve IA"
+"2026-04-13","Integrations et deploiement","Connecter Make, preparer Railway, documenter la base et le deploiement, rediger securite et RGPD","Preuve d'integration et de deploiement"
+"2026-04-14","Preuves projet","Rassembler les captures Git, Kanban, README, architecture, securite et conformite","Pack de preuves pour le Bloc 2"
+"2026-04-15","Presentation et dossier","Construire les slides, rediger le cahier des charges, les parties front-end et back-end, commencer l'assemblage du dossier","Presentation presque finalisee et dossier avance"
+"2026-04-16","Finalisation","Terminer le dossier de 20 pages, rediger les sections tests et infrastructure, repeter l'oral, faire la verification technique finale","Dossier final et presentation repetee"
+"2026-04-17","Soutenance","Presenter le projet et faire la demonstration","Presentation RNCP du Bloc 2"
