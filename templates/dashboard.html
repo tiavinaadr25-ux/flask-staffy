@@ -28,6 +28,27 @@
         </article>
       </div>
 
+      <div class="card quick-actions-card">
+        <div class="section-head">
+          <h2>Actions rapides</h2>
+        </div>
+        <div class="quick-actions-grid">
+          <a class="btn-primary" href="{{ url_for('employee_create') }}">Ajouter un employé</a>
+          <a class="btn-secondary" href="{{ url_for('task_create') }}">Créer une tâche</a>
+          <a class="btn-secondary" href="{{ url_for('leave_request_create') }}">Ajouter un congé</a>
+        </div>
+      </div>
+
+      {% if is_workspace_empty %}
+        <div class="card onboarding-card">
+          <p class="eyebrow">Première connexion</p>
+          <h2>Votre espace Staffly est prêt</h2>
+          <p class="page-intro">
+            Commencez par ajouter votre première personne, puis créez vos premières tâches pour voir le SaaS prendre vie.
+          </p>
+        </div>
+      {% endif %}
+
       <div class="card-grid">
         <article class="card">
           <div class="section-head">

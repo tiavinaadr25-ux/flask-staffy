@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import re
 
+from sqlalchemy import select
+
+from app import Manager, db
+
 
 def extract_csrf_token(html: str) -> str:
     match = re.search(r'name="csrf_token" value="([^"]+)"', html)
@@ -55,6 +59,55 @@ def test_login_succeeds(client) -> None:
     assert login_response.status_code == 200
     assert b"Welcome back." in login_response.data
     assert b"Test Manager" in login_response.data
+
+
+def test_register_creates_account_and_redirects_dashboard(client, app) -> None:
+    response = client.get("/register")
+    csrf_token = extract_csrf_token(response.data.decode("utf-8"))
+
+    register_response = client.post(
+        "/register",
+        data={
+            "csrf_token": csrf_token,
+            "full_name": "New Manager",
+            "restaurant_name": "New Bistro",
+            "email": "new.manager@staffly.com",
+            "password": "Staffly456!",
+            "password_confirmation": "Staffly456!",
+        },
+        follow_redirects=True,
+    )
+
+    assert register_response.status_code == 200
+    assert b"Your Staffly account is ready." in register_response.data
+    assert b"New Manager" in register_response.data
+    assert b"Votre espace Staffly est pr\xc3\xaat" in register_response.data
+
+    with app.app_context():
+        manager = db.session.scalar(
+            select(Manager).where(Manager.email == "new.manager@staffly.com")
+        )
+        assert manager is not None
+
+
+def test_register_rejects_duplicate_email(client) -> None:
+    response = client.get("/register")
+    csrf_token = extract_csrf_token(response.data.decode("utf-8"))
+
+    register_response = client.post(
+        "/register",
+        data={
+            "csrf_token": csrf_token,
+            "full_name": "Duplicate Manager",
+            "restaurant_name": "Duplicate Bistro",
+            "email": "manager@staffly.com",
+            "password": "Staffly456!",
+            "password_confirmation": "Staffly456!",
+        },
+    )
+
+    assert register_response.status_code == 409
+    assert b"An account already exists with this email." in register_response.data
 
 
 def test_employee_can_be_created(client) -> None:

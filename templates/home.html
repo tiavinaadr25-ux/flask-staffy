@@ -14,7 +14,7 @@
         Présences, tâches, notifications et congés.
       </p>
       <div class="hero-actions">
-        <a class="btn-primary" href="#steps">Commencer gratuitement →</a>
+        <a class="btn-primary" href="{{ url_for('register') }}">Créer mon compte →</a>
         <a class="btn-secondary" href="{{ url_for('login') }}">Connexion manager</a>
       </div>
     </div>
@@ -91,41 +91,6 @@
           <div class="result-highlight" id="result-value">— h / semaine</div>
           <p>grâce à Staffly !</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="content-section bloc2-section">
-    <div class="container">
-      <div class="steps-header">
-        <h2 class="section-title">Ce que l'on a ajouté pour le Bloc 2</h2>
-        <p class="section-subtitle">
-          Nous gardons la maquette d'origine, mais nous l'avons reliée à une vraie application web avec base de données.
-        </p>
-      </div>
-
-      <div class="card-grid">
-        <article class="card bloc2-card">
-          <h3>Application dynamique</h3>
-          <p>Connexion manager, dashboard, formulaires et navigation protégée.</p>
-          <a class="bloc2-link" href="{{ url_for('login') }}">Accéder à l'espace manager</a>
-        </article>
-
-        <article class="card bloc2-card">
-          <h3>Base de données relationnelle</h3>
-          <p>Managers, employés, tâches et congés sont désormais stockés et reliés entre eux.</p>
-          <div class="bloc2-stats">
-            <span>{{ manager_count }} manager(s)</span>
-            <span>{{ employee_count }} employé(s)</span>
-            <span>{{ task_count }} tâche(s)</span>
-          </div>
-        </article>
-
-        <article class="card bloc2-card">
-          <h3>Compétences Bloc 2</h3>
-          <p>SQL, composants serveur, sécurité, tests et préparation au déploiement Railway.</p>
-          <a class="bloc2-link" href="{{ url_for('dashboard') }}">Voir le dashboard</a>
-        </article>
       </div>
     </div>
   </section>

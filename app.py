@@ -389,6 +389,57 @@ def register_routes(app: Flask) -> None:
             task_count=task_count,
         )
 
+    @app.route("/register", methods=["GET", "POST"])
+    @app.route("/inscription", methods=["GET", "POST"])
+    def register() -> ResponseReturnValue:
+        if get_current_manager() is not None:
+            return redirect(url_for("dashboard"))
+
+        if request.method == "POST":
+            validate_csrf_token(request.form.get("csrf_token"))
+
+            full_name = request.form.get("full_name", "").strip()
+            restaurant_name = request.form.get("restaurant_name", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            password = request.form.get("password", "")
+            password_confirmation = request.form.get("password_confirmation", "")
+
+            if not full_name or not restaurant_name or not email or not password:
+                flash("Please complete all required fields.", "error")
+                return render_template("register.html"), 400
+
+            if len(password) < 8:
+                flash("Your password must contain at least 8 characters.", "error")
+                return render_template("register.html"), 400
+
+            if password != password_confirmation:
+                flash("Passwords do not match.", "error")
+                return render_template("register.html"), 400
+
+            existing_manager = db.session.scalar(
+                select(Manager).where(Manager.email == email)
+            )
+            if existing_manager is not None:
+                flash("An account already exists with this email.", "error")
+                return render_template("register.html"), 409
+
+            manager = Manager(
+                full_name=full_name,
+                restaurant_name=restaurant_name,
+                email=email,
+            )
+            manager.set_password(password)
+            db.session.add(manager)
+            db.session.commit()
+
+            session.clear()
+            session[LOGIN_SESSION_KEY] = manager.id
+            session[CSRF_SESSION_KEY] = secrets.token_hex(16)
+            flash("Your Staffly account is ready.", "success")
+            return redirect(url_for("dashboard"))
+
+        return render_template("register.html")
+
     @app.route("/login", methods=["GET", "POST"])
     def login() -> ResponseReturnValue:
         if request.method == "POST":
@@ -457,6 +508,11 @@ def register_routes(app: Flask) -> None:
             employee_count=len(manager.employees),
             task_count=len(manager.tasks),
             leave_request_count=len(manager.leave_requests),
+            is_workspace_empty=(
+                len(manager.employees) == 0
+                and len(manager.tasks) == 0
+                and len(manager.leave_requests) == 0
+            ),
             employees=employees,
             tasks=tasks,
             leave_requests=leave_requests,
