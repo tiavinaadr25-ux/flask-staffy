@@ -11,11 +11,11 @@
       </h1>
       <p class="hero-subtitle">
         Staffly est l'outil pensé pour les managers de restaurants.<br />
-        Présences, tâches, notifications et congés dans une application web sécurisée.
+        Présences, tâches, notifications et congés.
       </p>
       <div class="hero-actions">
-        <a class="btn-primary" href="{{ url_for('login') }}">Ouvrir l'espace manager →</a>
-        <a class="btn-secondary" href="{{ url_for('dashboard') }}">Voir le dashboard</a>
+        <a class="btn-primary" href="#steps">Commencer gratuitement →</a>
+        <a class="btn-secondary" href="{{ url_for('login') }}">Connexion manager</a>
       </div>
     </div>
   </section>
@@ -35,7 +35,7 @@
           <div class="step-number">1</div>
           <div class="step-body">
             <h3>Créez votre espace manager</h3>
-            <p>Connectez-vous à votre compte pour accéder au tableau de bord et centraliser vos données.</p>
+            <p>Inscrivez-vous en 2 minutes. Renseignez le nom de votre établissement, votre rôle et les premières infos de votre équipe.</p>
           </div>
         </div>
 
@@ -43,51 +43,94 @@
           <div class="step-number">2</div>
           <div class="step-body">
             <h3>Ajoutez vos employés</h3>
-            <p>Renseignez les membres de votre équipe avec leur rôle, leur contact et leur statut.</p>
+            <p>Importez votre liste ou ajoutez-les manuellement.</p>
           </div>
         </div>
 
         <div class="step">
           <div class="step-number">3</div>
           <div class="step-body">
-            <h3>Créez vos tâches et vos congés</h3>
-            <p>Suivez les tâches à faire et les demandes d'absence directement dans votre application.</p>
+            <h3>Lancez le suivi dès aujourd'hui</h3>
+            <p>Commencez à pointer les présences, créez vos premières tâches, activez les notifications. Votre tableau de bord se remplit en temps réel.</p>
           </div>
         </div>
 
         <div class="step">
           <div class="step-number">4</div>
           <div class="step-body">
-            <h3>Pilotez votre activité</h3>
-            <p>Retrouvez en un coup d'œil vos indicateurs manager et les informations de votre équipe.</p>
+            <h3>Gagnez du temps chaque jour</h3>
+            <p>En moins d'une semaine, la gestion quotidienne de votre équipe devient fluide. Moins de stress, plus de focus sur votre cuisine et vos clients.</p>
           </div>
         </div>
       </div>
 
       <div class="calculator-card">
-        <h3 class="calc-title">Votre tableau de bord Staffly<br />en un coup d'œil</h3>
+        <h3 class="calc-title">Calculez combien de temps<br />vous allez gagner&nbsp;!</h3>
 
-        <div class="stats-stack">
-          <div class="stat-card">
-            <span class="stat-label">Managers enregistrés</span>
-            <span class="stat-value">{{ manager_count }}</span>
+        <div class="calc-form">
+          <div class="form-group">
+            <label for="nb-employes">Nombre d'employés</label>
+            <input type="number" id="nb-employes" placeholder="Ex : 8" min="1" />
           </div>
-          <div class="stat-card">
-            <span class="stat-label">Employés enregistrés</span>
-            <span class="stat-value">{{ employee_count }}</span>
+
+          <div class="form-group">
+            <label for="nb-taches">Nombre de tâches par jour</label>
+            <input type="number" id="nb-taches" placeholder="Ex : 5" min="1" />
           </div>
-          <div class="stat-card">
-            <span class="stat-label">Tâches enregistrées</span>
-            <span class="stat-value">{{ task_count }}</span>
+
+          <div class="form-group">
+            <label for="duree-tache">Durée moyenne d'une tâche (min)</label>
+            <input type="number" id="duree-tache" placeholder="Ex : 10" min="1" />
           </div>
+
+          <button class="btn-calculer" type="button" onclick="calculer()">CALCULEZ</button>
         </div>
 
-        <div class="calc-result calc-result-visible">
-          <p>Ce MVP couvre déjà</p>
-          <div class="result-highlight">login + CRUD + SQL</div>
-          <p>pour répondre aux attendus du Bloc 2.</p>
+        <div class="calc-result" id="calc-result">
+          <p>Vous pourriez gagner</p>
+          <div class="result-highlight" id="result-value">— h / semaine</div>
+          <p>grâce à Staffly !</p>
         </div>
       </div>
     </div>
   </section>
+
+  <section class="content-section bloc2-section">
+    <div class="container">
+      <div class="steps-header">
+        <h2 class="section-title">Ce que l'on a ajouté pour le Bloc 2</h2>
+        <p class="section-subtitle">
+          Nous gardons la maquette d'origine, mais nous l'avons reliée à une vraie application web avec base de données.
+        </p>
+      </div>
+
+      <div class="card-grid">
+        <article class="card bloc2-card">
+          <h3>Application dynamique</h3>
+          <p>Connexion manager, dashboard, formulaires et navigation protégée.</p>
+          <a class="bloc2-link" href="{{ url_for('login') }}">Accéder à l'espace manager</a>
+        </article>
+
+        <article class="card bloc2-card">
+          <h3>Base de données relationnelle</h3>
+          <p>Managers, employés, tâches et congés sont désormais stockés et reliés entre eux.</p>
+          <div class="bloc2-stats">
+            <span>{{ manager_count }} manager(s)</span>
+            <span>{{ employee_count }} employé(s)</span>
+            <span>{{ task_count }} tâche(s)</span>
+          </div>
+        </article>
+
+        <article class="card bloc2-card">
+          <h3>Compétences Bloc 2</h3>
+          <p>SQL, composants serveur, sécurité, tests et préparation au déploiement Railway.</p>
+          <a class="bloc2-link" href="{{ url_for('dashboard') }}">Voir le dashboard</a>
+        </article>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}
