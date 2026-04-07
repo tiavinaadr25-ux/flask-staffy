@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Employees | Staffly{% endblock %}
+{% block title %}Employés | Staffly{% endblock %}
 
 {% block content %}
   <section class="content-section">
     <div class="container">
       <div class="card page-header split-header">
         <div>
-          <p class="eyebrow">SQL data access</p>
-          <h1>Employees</h1>
-          <p class="page-intro">Manage your team members from one page.</p>
+          <p class="eyebrow">Gestion des employés</p>
+          <h1>Employés</h1>
+          <p class="page-intro">Retrouvez ici tous les membres de votre équipe et mettez leurs informations à jour.</p>
         </div>
-        <a class="button button-primary" href="{{ url_for('employee_create') }}">Add employee</a>
+        <a class="btn-primary small-action" href="{{ url_for('employee_create') }}">Ajouter un employé</a>
       </div>
 
       <div class="card table-card">
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Role</th>
+              <th>Nom</th>
+              <th>Poste</th>
               <th>Email</th>
-              <th>Status</th>
+              <th>Statut</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -33,16 +33,16 @@
                 <td>{{ employee.email or "-" }}</td>
                 <td><span class="badge">{{ employee.status }}</span></td>
                 <td class="actions-cell">
-                  <a href="{{ url_for('employee_edit', employee_id=employee.id) }}">Edit</a>
+                  <a href="{{ url_for('employee_edit', employee_id=employee.id) }}">Modifier</a>
                   <form method="POST" action="{{ url_for('employee_delete', employee_id=employee.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-                    <button class="inline-button danger-link" type="submit">Delete</button>
+                    <button class="inline-button danger-link" type="submit">Supprimer</button>
                   </form>
                 </td>
               </tr>
             {% else %}
               <tr>
-                <td colspan="5">No employee created yet.</td>
+                <td colspan="5">Aucun employé enregistré pour le moment.</td>
               </tr>
             {% endfor %}
           </tbody>

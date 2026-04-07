@@ -1,46 +1,56 @@
 {% extends "base.html" %}
 
-{% block title %}{% if task %}Edit task{% else %}Add task{% endif %} | Staffly{% endblock %}
+{% block title %}{% if task %}Modifier une tâche{% else %}Ajouter une tâche{% endif %} | Staffly{% endblock %}
 
 {% block content %}
   <section class="form-section">
     <div class="container form-wrapper">
-      <div class="card form-card">
-        <p class="eyebrow">Task management</p>
-        <h1>{% if task %}Edit task{% else %}Add task{% endif %}</h1>
+      <div class="card auth-card form-card">
+        <p class="eyebrow">Gestion des tâches</p>
+        <h1 class="section-title">{% if task %}Modifier une tâche{% else %}Ajouter une tâche{% endif %}</h1>
 
-        <form method="POST" class="form-layout">
+        <form method="POST" class="auth-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
-          <label for="title">Title</label>
-          <input id="title" name="title" type="text" value="{{ task.title if task else '' }}" required />
+          <div class="form-group">
+            <label for="title">Titre</label>
+            <input id="title" name="title" type="text" value="{{ task.title if task else '' }}" required />
+          </div>
 
-          <label for="description">Description</label>
-          <textarea id="description" name="description" rows="4">{{ task.description if task else '' }}</textarea>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4">{{ task.description if task else '' }}</textarea>
+          </div>
 
-          <label for="employee_id">Assigned employee</label>
-          <select id="employee_id" name="employee_id">
-            <option value="">No employee</option>
-            {% set selected_employee_id = task.employee_id if task else None %}
-            {% for employee in employees %}
-              <option value="{{ employee.id }}" {% if selected_employee_id == employee.id %}selected{% endif %}>
-                {{ employee.full_name }}
-              </option>
-            {% endfor %}
-          </select>
+          <div class="form-group">
+            <label for="employee_id">Employé assigné</label>
+            <select id="employee_id" name="employee_id">
+              <option value="">Aucun employé</option>
+              {% set selected_employee_id = task.employee_id if task else None %}
+              {% for employee in employees %}
+                <option value="{{ employee.id }}" {% if selected_employee_id == employee.id %}selected{% endif %}>
+                  {{ employee.full_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
 
-          <label for="status">Status</label>
-          {% set current_status = task.status if task else 'todo' %}
-          <select id="status" name="status">
-            <option value="todo" {% if current_status == 'todo' %}selected{% endif %}>todo</option>
-            <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>in_progress</option>
-            <option value="done" {% if current_status == 'done' %}selected{% endif %}>done</option>
-          </select>
+          <div class="form-group">
+            <label for="status">Statut</label>
+            {% set current_status = task.status if task else 'todo' %}
+            <select id="status" name="status">
+              <option value="todo" {% if current_status == 'todo' %}selected{% endif %}>todo</option>
+              <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>in_progress</option>
+              <option value="done" {% if current_status == 'done' %}selected{% endif %}>done</option>
+            </select>
+          </div>
 
-          <label for="due_date">Due date</label>
-          <input id="due_date" name="due_date" type="date" value="{{ task.due_date.isoformat() if task and task.due_date else '' }}" />
+          <div class="form-group">
+            <label for="due_date">Date limite</label>
+            <input id="due_date" name="due_date" type="date" value="{{ task.due_date.isoformat() if task and task.due_date else '' }}" />
+          </div>
 
-          <button class="button button-primary" type="submit">Save task</button>
+          <button class="btn-primary auth-submit" type="submit">Enregistrer la tâche</button>
         </form>
       </div>
     </div>

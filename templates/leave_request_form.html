@@ -1,35 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Add Leave Request | Staffly{% endblock %}
+{% block title %}Ajouter une demande de congé | Staffly{% endblock %}
 
 {% block content %}
   <section class="form-section">
     <div class="container form-wrapper">
-      <div class="card form-card">
-        <p class="eyebrow">Leave management</p>
-        <h1>Add leave request</h1>
+      <div class="card auth-card form-card">
+        <p class="eyebrow">Gestion des congés</p>
+        <h1 class="section-title">Ajouter une demande de congé</h1>
 
-        <form method="POST" class="form-layout">
+        <form method="POST" class="auth-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
-          <label for="employee_id">Employee</label>
-          <select id="employee_id" name="employee_id" required>
-            <option value="">Choose an employee</option>
-            {% for employee in employees %}
-              <option value="{{ employee.id }}">{{ employee.full_name }}</option>
-            {% endfor %}
-          </select>
+          <div class="form-group">
+            <label for="employee_id">Employé</label>
+            <select id="employee_id" name="employee_id" required>
+              <option value="">Choisir un employé</option>
+              {% for employee in employees %}
+                <option value="{{ employee.id }}">{{ employee.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-          <label for="start_date">Start date</label>
-          <input id="start_date" name="start_date" type="date" required />
+          <div class="form-group">
+            <label for="start_date">Date de début</label>
+            <input id="start_date" name="start_date" type="date" required />
+          </div>
 
-          <label for="end_date">End date</label>
-          <input id="end_date" name="end_date" type="date" required />
+          <div class="form-group">
+            <label for="end_date">Date de fin</label>
+            <input id="end_date" name="end_date" type="date" required />
+          </div>
 
-          <label for="reason">Reason</label>
-          <textarea id="reason" name="reason" rows="4"></textarea>
+          <div class="form-group">
+            <label for="reason">Motif</label>
+            <textarea id="reason" name="reason" rows="4"></textarea>
+          </div>
 
-          <button class="button button-primary" type="submit">Save leave request</button>
+          <button class="btn-primary auth-submit" type="submit">Enregistrer la demande</button>
         </form>
       </div>
     </div>

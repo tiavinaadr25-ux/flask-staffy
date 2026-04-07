@@ -1,37 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}{% if employee %}Edit employee{% else %}Add employee{% endif %} | Staffly{% endblock %}
+{% block title %}{% if employee %}Modifier un employé{% else %}Ajouter un employé{% endif %} | Staffly{% endblock %}
 
 {% block content %}
   <section class="form-section">
     <div class="container form-wrapper">
-      <div class="card form-card">
-        <p class="eyebrow">Employee management</p>
-        <h1>{% if employee %}Edit employee{% else %}Add employee{% endif %}</h1>
+      <div class="card auth-card form-card">
+        <p class="eyebrow">Gestion des employés</p>
+        <h1 class="section-title">{% if employee %}Modifier un employé{% else %}Ajouter un employé{% endif %}</h1>
 
-        <form method="POST" class="form-layout">
+        <form method="POST" class="auth-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
-          <label for="full_name">Full name</label>
-          <input id="full_name" name="full_name" type="text" value="{{ employee.full_name if employee else '' }}" required />
+          <div class="form-group">
+            <label for="full_name">Nom complet</label>
+            <input id="full_name" name="full_name" type="text" value="{{ employee.full_name if employee else '' }}" required />
+          </div>
 
-          <label for="role_title">Role</label>
-          <input id="role_title" name="role_title" type="text" value="{{ employee.role_title if employee else '' }}" required />
+          <div class="form-group">
+            <label for="role_title">Poste</label>
+            <input id="role_title" name="role_title" type="text" value="{{ employee.role_title if employee else '' }}" required />
+          </div>
 
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" value="{{ employee.email if employee else '' }}" />
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="{{ employee.email if employee else '' }}" />
+          </div>
 
-          <label for="phone">Phone</label>
-          <input id="phone" name="phone" type="text" value="{{ employee.phone if employee else '' }}" />
+          <div class="form-group">
+            <label for="phone">Téléphone</label>
+            <input id="phone" name="phone" type="text" value="{{ employee.phone if employee else '' }}" />
+          </div>
 
-          <label for="status">Status</label>
-          <select id="status" name="status">
-            {% set current_status = employee.status if employee else 'active' %}
-            <option value="active" {% if current_status == 'active' %}selected{% endif %}>active</option>
-            <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>inactive</option>
-          </select>
+          <div class="form-group">
+            <label for="status">Statut</label>
+            <select id="status" name="status">
+              {% set current_status = employee.status if employee else 'active' %}
+              <option value="active" {% if current_status == 'active' %}selected{% endif %}>active</option>
+              <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>inactive</option>
+            </select>
+          </div>
 
-          <button class="button button-primary" type="submit">Save employee</button>
+          <button class="btn-primary auth-submit" type="submit">Enregistrer l'employé</button>
         </form>
       </div>
     </div>

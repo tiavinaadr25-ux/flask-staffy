@@ -28,7 +28,7 @@ def test_home_page_loads(client) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"Manage restaurant teams with one secure web application." in response.data
+    assert b"G\xc3\xa9rez votre \xc3\xa9quipe" in response.data
 
 
 def test_dashboard_requires_login(client) -> None:
