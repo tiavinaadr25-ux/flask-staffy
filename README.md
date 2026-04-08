@@ -13,6 +13,8 @@ code quality, and deployment preparation.
 - Leave request management
 - SQLAlchemy relational models
 - PostgreSQL-ready configuration for localhost and Railway
+- AI task suggestions page
+- MongoDB-ready history for AI suggestions
 
 ## Local setup
 
@@ -53,6 +55,20 @@ code quality, and deployment preparation.
    ```bash
    flask --app app run
    ```
+
+## Optional AI and NoSQL setup
+
+- `MONGO_URI` enables MongoDB history for AI suggestions
+- `MONGO_DB_NAME` selects the MongoDB database name
+- `MONGO_COLLECTION_NAME` selects the MongoDB collection name
+- `HUGGING_FACE_API_TOKEN` enables real AI calls
+- `HUGGING_FACE_MODEL_URL` points to your Hugging Face inference endpoint
+
+By default, the project uses the Hugging Face serverless inference pattern with
+`https://api-inference.huggingface.co/models/<MODEL_ID>`.
+The provided `.env.example` uses a small instruct model suited for demo flows.
+
+Without these variables, the AI suggestion page still works in local fallback mode.
 
 Demo account:
 

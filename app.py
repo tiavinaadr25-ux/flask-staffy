@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
 import os
 import secrets
 from datetime import UTC, date, datetime
 from functools import wraps
 from typing import Any, Callable, TypeVar
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 import click
 from dotenv import load_dotenv
@@ -24,6 +27,16 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Date, DateTime, ForeignKey, String, Text, func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+try:
+    from pymongo import MongoClient
+    from pymongo.errors import PyMongoError
+except ImportError:  # pragma: no cover - optional dependency in local dev
+    MongoClient = None
+
+    class PyMongoError(Exception):
+        """Fallback error type used when pymongo is unavailable."""
+
+
 load_dotenv()
 
 db: SQLAlchemy = SQLAlchemy()
@@ -31,6 +44,9 @@ bcrypt = Bcrypt()
 
 CSRF_SESSION_KEY = "_csrf_token"
 LOGIN_SESSION_KEY = "manager_id"
+DEFAULT_HUGGING_FACE_MODEL_URL = (
+    "https://api-inference.huggingface.co/models/" "HuggingFaceTB/SmolLM2-1.7B-Instruct"
+)
 ViewFunction = TypeVar("ViewFunction", bound=Callable[..., ResponseReturnValue])
 
 
@@ -244,6 +260,178 @@ def get_owned_leave_request_or_404(leave_request_id: int) -> LeaveRequest:
     return leave_request
 
 
+def get_mongo_collection(app: Flask) -> Any | None:
+    """Return the MongoDB collection used for AI suggestion history."""
+    mongo_uri = app.config.get("MONGO_URI", "")
+
+    if MongoClient is None or not isinstance(mongo_uri, str) or not mongo_uri:
+        return None
+
+    mongo_client = app.extensions.get("mongo_client")
+    if mongo_client is None:
+        mongo_client = MongoClient(mongo_uri, serverSelectionTimeoutMS=1000)
+        app.extensions["mongo_client"] = mongo_client
+
+    database_name = app.config.get("MONGO_DB_NAME", "staffly_ai")
+    collection_name = app.config.get("MONGO_COLLECTION_NAME", "ai_suggestions")
+    return mongo_client[database_name][collection_name]
+
+
+def parse_suggestion_items(raw_text: str) -> list[str]:
+    """Convert raw generated text into a clean list of suggestions."""
+    normalized_lines = [line.strip(" -*0123456789.") for line in raw_text.splitlines()]
+    suggestions = [line.strip() for line in normalized_lines if line.strip()]
+
+    if suggestions:
+        return suggestions[:5]
+
+    sentence_candidates = [
+        sentence.strip()
+        for sentence in raw_text.replace("!", ".").split(".")
+        if sentence.strip()
+    ]
+    return sentence_candidates[:5]
+
+
+def build_fallback_suggestions(manager: Manager, prompt: str) -> list[str]:
+    """Return useful task suggestions when the AI API is not configured."""
+    context = prompt.strip().rstrip(".")
+    restaurant_name = manager.restaurant_name
+
+    return [
+        f"Préparer la mise en place de {context} pour {restaurant_name}.",
+        f"Faire un point d'équipe rapide sur les priorités liées à {context}.",
+        f"Vérifier les réservations, le stock et les postes avant {context}.",
+    ]
+
+
+def generate_ai_task_suggestions(
+    app: Flask, manager: Manager, prompt: str
+) -> tuple[list[str], str]:
+    """Generate task suggestions with Hugging Face when configured."""
+    token = app.config.get("HUGGING_FACE_API_TOKEN", "")
+    model_url = app.config.get("HUGGING_FACE_MODEL_URL", "")
+
+    if not isinstance(token, str) or not isinstance(model_url, str):
+        return build_fallback_suggestions(manager, prompt), "fallback"
+
+    if not token or not model_url:
+        return build_fallback_suggestions(manager, prompt), "fallback"
+
+    payload = {
+        "inputs": (
+            "Generate 3 short restaurant team task suggestions in French. "
+            f"Restaurant: {manager.restaurant_name}. "
+            f"Manager request: {prompt}"
+        ),
+        "parameters": {
+            "max_new_tokens": 120,
+            "return_full_text": False,
+        },
+    }
+    request_headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
+    api_request = urllib_request.Request(
+        model_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=request_headers,
+        method="POST",
+    )
+
+    try:
+        with urllib_request.urlopen(api_request, timeout=10) as response:
+            response_payload = json.loads(response.read().decode("utf-8"))
+    except (
+        TimeoutError,
+        urllib_error.URLError,
+        urllib_error.HTTPError,
+        json.JSONDecodeError,
+    ):
+        return build_fallback_suggestions(manager, prompt), "fallback"
+
+    if isinstance(response_payload, list) and response_payload:
+        generated_text = str(response_payload[0].get("generated_text", "")).strip()
+    elif isinstance(response_payload, dict):
+        generated_text = str(response_payload.get("generated_text", "")).strip()
+    else:
+        generated_text = ""
+
+    parsed_items = parse_suggestion_items(generated_text)
+    if parsed_items:
+        return parsed_items, "hugging_face"
+
+    return build_fallback_suggestions(manager, prompt), "fallback"
+
+
+def save_ai_suggestion_history(
+    app: Flask,
+    manager: Manager,
+    prompt: str,
+    suggestions: list[str],
+    source: str,
+) -> bool:
+    """Save AI suggestion history into MongoDB when available."""
+    collection = get_mongo_collection(app)
+    if collection is None:
+        return False
+
+    document = {
+        "manager_email": manager.email,
+        "manager_name": manager.full_name,
+        "restaurant_name": manager.restaurant_name,
+        "prompt": prompt,
+        "suggestions": suggestions,
+        "source": source,
+        "created_at": datetime.now(UTC).isoformat(),
+    }
+
+    try:
+        collection.insert_one(document)
+    except PyMongoError:
+        return False
+
+    return True
+
+
+def load_ai_suggestion_history(
+    app: Flask,
+    manager: Manager,
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    """Load the latest AI suggestion history for the connected manager."""
+    collection = get_mongo_collection(app)
+    if collection is None:
+        return []
+
+    try:
+        documents = (
+            collection.find({"manager_email": manager.email})
+            .sort(
+                "created_at",
+                -1,
+            )
+            .limit(limit)
+        )
+    except PyMongoError:
+        return []
+
+    history: list[dict[str, Any]] = []
+    for document in documents:
+        history.append(
+            {
+                "prompt": str(document.get("prompt", "")),
+                "suggestions": list(document.get("suggestions", [])),
+                "source": str(document.get("source", "fallback")),
+                "created_at": str(document.get("created_at", "")),
+            }
+        )
+
+    return history
+
+
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     """Create the Flask application used locally, in tests, and in production."""
     app = Flask(__name__)
@@ -252,6 +440,17 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SECRET_KEY=os.getenv("SECRET_KEY", "change-this-secret-before-production"),
         SQLALCHEMY_DATABASE_URI=normalize_database_url(
             os.getenv("DATABASE_URL", "sqlite:///staffly_dev.db")
+        ),
+        MONGO_URI=os.getenv("MONGO_URI", os.getenv("MONGO_URL", "")),
+        MONGO_DB_NAME=os.getenv("MONGO_DB_NAME", "staffly_ai"),
+        MONGO_COLLECTION_NAME=os.getenv(
+            "MONGO_COLLECTION_NAME",
+            "ai_suggestions",
+        ),
+        HUGGING_FACE_API_TOKEN=os.getenv("HUGGING_FACE_API_TOKEN", ""),
+        HUGGING_FACE_MODEL_URL=os.getenv(
+            "HUGGING_FACE_MODEL_URL",
+            DEFAULT_HUGGING_FACE_MODEL_URL,
         ),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SESSION_COOKIE_HTTPONLY=True,
@@ -516,6 +715,68 @@ def register_routes(app: Flask) -> None:
             employees=employees,
             tasks=tasks,
             leave_requests=leave_requests,
+        )
+
+    @app.route("/ai-suggestions", methods=["GET", "POST"])
+    @login_required
+    def ai_suggestions() -> ResponseReturnValue:
+        manager = get_current_manager()
+        assert manager is not None
+
+        prompt = ""
+        suggestions: list[str] = []
+        generation_source = ""
+        mongo_enabled = bool(app.config.get("MONGO_URI"))
+        hugging_face_enabled = bool(
+            app.config.get("HUGGING_FACE_API_TOKEN")
+            and app.config.get("HUGGING_FACE_MODEL_URL")
+        )
+
+        if request.method == "POST":
+            validate_csrf_token(request.form.get("csrf_token"))
+            prompt = request.form.get("prompt", "").strip()
+
+            if not prompt:
+                flash("Please describe the shift or context first.", "error")
+                return (
+                    render_template(
+                        "ai_suggestions.html",
+                        prompt=prompt,
+                        suggestions=suggestions,
+                        generation_source=generation_source,
+                        suggestion_history=load_ai_suggestion_history(app, manager),
+                        mongo_enabled=mongo_enabled,
+                        hugging_face_enabled=hugging_face_enabled,
+                    ),
+                    400,
+                )
+
+            suggestions, generation_source = generate_ai_task_suggestions(
+                app,
+                manager,
+                prompt,
+            )
+            history_saved = save_ai_suggestion_history(
+                app,
+                manager,
+                prompt,
+                suggestions,
+                generation_source,
+            )
+
+            if history_saved:
+                flash("AI suggestions generated and saved.", "success")
+            else:
+                flash("AI suggestions generated.", "success")
+
+        return render_template(
+            "ai_suggestions.html",
+            prompt=prompt,
+            suggestions=suggestions,
+            generation_source=generation_source,
+            suggestion_history=load_ai_suggestion_history(app, manager),
+            mongo_enabled=mongo_enabled,
+            hugging_face_enabled=hugging_face_enabled,
         )
 
     @app.route("/employees")

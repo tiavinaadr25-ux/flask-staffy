@@ -42,6 +42,13 @@ def test_dashboard_requires_login(client) -> None:
     assert "/login" in response.headers["Location"]
 
 
+def test_ai_suggestions_requires_login(client) -> None:
+    response = client.get("/ai-suggestions", follow_redirects=False)
+
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
 def test_login_succeeds(client) -> None:
     response = client.get("/login")
     csrf_token = extract_csrf_token(response.data.decode("utf-8"))
@@ -179,3 +186,24 @@ def test_leave_request_can_be_created(client) -> None:
     assert response.status_code == 200
     assert b"Leave request created successfully." in response.data
     assert b"Personal reason" in response.data
+
+
+def test_ai_suggestions_can_be_generated_in_fallback_mode(client) -> None:
+    login_manager(client)
+
+    page = client.get("/ai-suggestions")
+    csrf_token = extract_csrf_token(page.data.decode("utf-8"))
+
+    response = client.post(
+        "/ai-suggestions",
+        data={
+            "csrf_token": csrf_token,
+            "prompt": "service du midi avec terrasse",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"AI suggestions generated." in response.data
+    assert b"service du midi avec terrasse" in response.data
+    assert b"fallback" in response.data

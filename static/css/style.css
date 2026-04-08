@@ -544,6 +544,67 @@ input[type="number"] {
   margin-bottom: 32px;
 }
 
+.ai-layout {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 24px;
+}
+
+.ai-card h2 {
+  margin-bottom: 16px;
+}
+
+.ai-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ai-result-box {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--blue-light);
+}
+
+.suggestion-list {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+.compact-list {
+  margin-top: 10px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.history-item {
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--blue-pale);
+  border: 1px solid var(--blue-light);
+}
+
+.history-prompt {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.history-date {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
 .clean-list {
   margin: 0;
   padding-left: 20px;
@@ -623,7 +684,8 @@ td {
 @media (max-width: 900px) {
   .steps-grid,
   .card-grid,
-  .stats-grid {
+  .stats-grid,
+  .ai-layout {
     grid-template-columns: 1fr;
   }
 }
