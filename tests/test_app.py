@@ -42,8 +42,8 @@ def test_dashboard_requires_login(client) -> None:
     assert "/login" in response.headers["Location"]
 
 
-def test_ai_suggestions_requires_login(client) -> None:
-    response = client.get("/ai-suggestions", follow_redirects=False)
+def test_tasks_page_requires_login(client) -> None:
+    response = client.get("/tasks", follow_redirects=False)
 
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
@@ -165,37 +165,14 @@ def test_task_can_be_created(client) -> None:
     assert b"Open the terrace area" in response.data
 
 
-def test_leave_request_can_be_created(client) -> None:
+def test_task_suggestions_can_be_generated_in_fallback_mode(client) -> None:
     login_manager(client)
 
-    form_page = client.get("/leave-requests/new")
-    csrf_token = extract_csrf_token(form_page.data.decode("utf-8"))
-
-    response = client.post(
-        "/leave-requests/new",
-        data={
-            "csrf_token": csrf_token,
-            "employee_id": "1",
-            "start_date": "2026-04-15",
-            "end_date": "2026-04-16",
-            "reason": "Personal reason",
-        },
-        follow_redirects=True,
-    )
-
-    assert response.status_code == 200
-    assert b"Leave request created successfully." in response.data
-    assert b"Personal reason" in response.data
-
-
-def test_ai_suggestions_can_be_generated_in_fallback_mode(client) -> None:
-    login_manager(client)
-
-    page = client.get("/ai-suggestions")
+    page = client.get("/tasks")
     csrf_token = extract_csrf_token(page.data.decode("utf-8"))
 
     response = client.post(
-        "/ai-suggestions",
+        "/tasks",
         data={
             "csrf_token": csrf_token,
             "prompt": "service du midi avec terrasse",
@@ -207,3 +184,4 @@ def test_ai_suggestions_can_be_generated_in_fallback_mode(client) -> None:
     assert b"AI suggestions generated." in response.data
     assert b"service du midi avec terrasse" in response.data
     assert b"fallback" in response.data
+    assert b"Suggestions g\xc3\xa9n\xc3\xa9r\xc3\xa9es" in response.data

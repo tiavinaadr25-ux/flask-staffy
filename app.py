@@ -572,6 +572,38 @@ def register_cli_commands(app: Flask) -> None:
 def register_routes(app: Flask) -> None:
     """Register the routes used by the Staffly MVP."""
 
+    def render_tasks_page(
+        manager: Manager,
+        *,
+        prompt: str = "",
+        suggestions: list[str] | None = None,
+        generation_source: str = "",
+        status_code: int = 200,
+    ) -> ResponseReturnValue:
+        """Render the task page with the task list and AI suggestion widgets."""
+        task_list = db.session.scalars(
+            select(Task)
+            .where(Task.manager_id == manager.id)
+            .order_by(Task.created_at.desc())
+        ).all()
+
+        return (
+            render_template(
+                "tasks.html",
+                tasks=task_list,
+                prompt=prompt,
+                suggestions=suggestions or [],
+                generation_source=generation_source,
+                suggestion_history=load_ai_suggestion_history(app, manager),
+                mongo_enabled=bool(app.config.get("MONGO_URI")),
+                hugging_face_enabled=bool(
+                    app.config.get("HUGGING_FACE_API_TOKEN")
+                    and app.config.get("HUGGING_FACE_MODEL_URL")
+                ),
+            ),
+            status_code,
+        )
+
     @app.route("/")
     def home() -> ResponseReturnValue:
         manager_count = (
@@ -694,89 +726,18 @@ def register_routes(app: Flask) -> None:
             .order_by(Task.created_at.desc())
             .limit(5)
         ).all()
-        leave_requests = db.session.scalars(
-            select(LeaveRequest)
-            .where(LeaveRequest.manager_id == manager.id)
-            .order_by(LeaveRequest.created_at.desc())
-            .limit(5)
-        ).all()
 
         return render_template(
             "dashboard.html",
             manager=manager,
             employee_count=len(manager.employees),
             task_count=len(manager.tasks),
-            leave_request_count=len(manager.leave_requests),
             is_workspace_empty=(
                 len(manager.employees) == 0
                 and len(manager.tasks) == 0
-                and len(manager.leave_requests) == 0
             ),
             employees=employees,
             tasks=tasks,
-            leave_requests=leave_requests,
-        )
-
-    @app.route("/ai-suggestions", methods=["GET", "POST"])
-    @login_required
-    def ai_suggestions() -> ResponseReturnValue:
-        manager = get_current_manager()
-        assert manager is not None
-
-        prompt = ""
-        suggestions: list[str] = []
-        generation_source = ""
-        mongo_enabled = bool(app.config.get("MONGO_URI"))
-        hugging_face_enabled = bool(
-            app.config.get("HUGGING_FACE_API_TOKEN")
-            and app.config.get("HUGGING_FACE_MODEL_URL")
-        )
-
-        if request.method == "POST":
-            validate_csrf_token(request.form.get("csrf_token"))
-            prompt = request.form.get("prompt", "").strip()
-
-            if not prompt:
-                flash("Please describe the shift or context first.", "error")
-                return (
-                    render_template(
-                        "ai_suggestions.html",
-                        prompt=prompt,
-                        suggestions=suggestions,
-                        generation_source=generation_source,
-                        suggestion_history=load_ai_suggestion_history(app, manager),
-                        mongo_enabled=mongo_enabled,
-                        hugging_face_enabled=hugging_face_enabled,
-                    ),
-                    400,
-                )
-
-            suggestions, generation_source = generate_ai_task_suggestions(
-                app,
-                manager,
-                prompt,
-            )
-            history_saved = save_ai_suggestion_history(
-                app,
-                manager,
-                prompt,
-                suggestions,
-                generation_source,
-            )
-
-            if history_saved:
-                flash("AI suggestions generated and saved.", "success")
-            else:
-                flash("AI suggestions generated.", "success")
-
-        return render_template(
-            "ai_suggestions.html",
-            prompt=prompt,
-            suggestions=suggestions,
-            generation_source=generation_source,
-            suggestion_history=load_ai_suggestion_history(app, manager),
-            mongo_enabled=mongo_enabled,
-            hugging_face_enabled=hugging_face_enabled,
         )
 
     @app.route("/employees")
@@ -860,18 +821,46 @@ def register_routes(app: Flask) -> None:
         flash("Employee deleted.", "success")
         return redirect(url_for("employees"))
 
-    @app.route("/tasks")
+    @app.route("/tasks", methods=["GET", "POST"])
     @login_required
     def tasks() -> ResponseReturnValue:
         manager = get_current_manager()
         assert manager is not None
 
-        task_list = db.session.scalars(
-            select(Task)
-            .where(Task.manager_id == manager.id)
-            .order_by(Task.created_at.desc())
-        ).all()
-        return render_template("tasks.html", tasks=task_list)
+        if request.method == "POST":
+            validate_csrf_token(request.form.get("csrf_token"))
+            prompt = request.form.get("prompt", "").strip()
+
+            if not prompt:
+                flash("Please describe the shift or context first.", "error")
+                return render_tasks_page(manager, prompt=prompt, status_code=400)
+
+            suggestions, generation_source = generate_ai_task_suggestions(
+                app,
+                manager,
+                prompt,
+            )
+            history_saved = save_ai_suggestion_history(
+                app,
+                manager,
+                prompt,
+                suggestions,
+                generation_source,
+            )
+
+            if history_saved:
+                flash("AI suggestions generated and saved.", "success")
+            else:
+                flash("AI suggestions generated.", "success")
+
+            return render_tasks_page(
+                manager,
+                prompt=prompt,
+                suggestions=suggestions,
+                generation_source=generation_source,
+            )
+
+        return render_tasks_page(manager)
 
     @app.route("/tasks/new", methods=["GET", "POST"])
     @login_required
