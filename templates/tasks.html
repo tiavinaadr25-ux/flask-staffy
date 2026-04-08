@@ -18,9 +18,6 @@
         <article class="card ai-card">
           <div class="section-head">
             <h2>Suggestion de tâches</h2>
-            {% if generation_source %}
-              <span class="badge">{{ generation_source }}</span>
-            {% endif %}
           </div>
 
           <p class="page-intro">
@@ -43,11 +40,6 @@
 
             <button class="btn-primary auth-submit" type="submit">Générer des suggestions</button>
           </form>
-
-          <div class="ai-meta">
-            <span>{% if hugging_face_enabled %}Hugging Face prêt{% else %}Mode démo local{% endif %}</span>
-            <span>{% if mongo_enabled %}Historique MongoDB actif{% else %}Historique local indisponible{% endif %}</span>
-          </div>
 
           {% if suggestions %}
             <div class="ai-result-box">

@@ -183,5 +183,4 @@ def test_task_suggestions_can_be_generated_in_fallback_mode(client) -> None:
     assert response.status_code == 200
     assert b"AI suggestions generated." in response.data
     assert b"service du midi avec terrasse" in response.data
-    assert b"fallback" in response.data
     assert b"Suggestions g\xc3\xa9n\xc3\xa9r\xc3\xa9es" in response.data
