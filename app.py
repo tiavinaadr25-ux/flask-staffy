@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import secrets
 from datetime import UTC, date, datetime
 from functools import wraps
@@ -293,16 +294,121 @@ def parse_suggestion_items(raw_text: str) -> list[str]:
     return sentence_candidates[:5]
 
 
-def build_fallback_suggestions(manager: Manager, prompt: str) -> list[str]:
-    """Return useful task suggestions when the AI API is not configured."""
-    context = prompt.strip().rstrip(".")
-    restaurant_name = manager.restaurant_name
+def normalize_matching_text(text: str) -> str:
+    """Normalize a text so repeated phrases can be detected more reliably."""
+    lowered_text = text.lower().strip()
+    compact_text = re.sub(r"\s+", " ", lowered_text)
+    return re.sub(r"[^\w\sàâçéèêëîïôöùûüÿœæ-]", "", compact_text)
 
-    return [
-        f"Préparer la mise en place de {context} pour {restaurant_name}.",
-        f"Faire un point d'équipe rapide sur les priorités liées à {context}.",
-        f"Vérifier les réservations, le stock et les postes avant {context}.",
-    ]
+
+def build_fallback_suggestions(prompt: str) -> list[str]:
+    """Return action-oriented task suggestions when the AI API is unavailable."""
+    normalized_prompt = normalize_matching_text(prompt)
+    suggestions: list[str] = []
+
+    def add_suggestion(item: str) -> None:
+        if item not in suggestions:
+            suggestions.append(item)
+
+    if any(
+        keyword in normalized_prompt
+        for keyword in ("midi", "dejeuner", "déjeuner", "lunch")
+    ):
+        add_suggestion(
+            "Lancer la mise en place et vérifier que chaque poste est"
+            " prêt avant l'ouverture du midi."
+        )
+
+    if any(
+        keyword in normalized_prompt
+        for keyword in ("soir", "diner", "dîner", "dinner")
+    ):
+        add_suggestion(
+            "Valider la mise en place du soir et confirmer la répartition"
+            " entre la salle et la cuisine."
+        )
+
+    if "terrasse" in normalized_prompt:
+        add_suggestion(
+            "Préparer la terrasse et répartir les zones entre les membres de l'équipe."
+        )
+
+    if any(
+        keyword in normalized_prompt
+        for keyword in ("absence", "absences", "absent", "manque", "sous-effectif")
+    ):
+        add_suggestion(
+            "Réorganiser les postes pour couvrir les absences sans ralentir le service."
+        )
+
+    if any(
+        keyword in normalized_prompt
+        for keyword in (
+            "reservation",
+            "reservations",
+            "réservation",
+            "réservations",
+            "reservent",
+            "réservent",
+        )
+    ):
+        add_suggestion(
+            "Faire un point sur les réservations et ajuster le plan de"
+            " salle selon le flux attendu."
+        )
+
+    if any(
+        keyword in normalized_prompt
+        for keyword in ("stock", "rupture", "livraison", "produit")
+    ):
+        add_suggestion(
+            "Contrôler les stocks critiques et signaler les manques"
+            " avant le lancement du service."
+        )
+
+    add_suggestion(
+        "Faire un briefing rapide avec l'équipe sur les priorités du"
+        " service."
+    )
+    add_suggestion(
+        "Vérifier la salle, le matériel et les postes de travail avant le coup de feu."
+    )
+    add_suggestion(
+        "Suivre l'avancement des tâches critiques et réajuster la"
+        " répartition si besoin."
+    )
+
+    return suggestions[:3]
+
+
+def clean_generated_suggestions(
+    suggestions: list[str],
+    prompt: str,
+    restaurant_name: str,
+) -> list[str]:
+    """Remove repetitive or low-value suggestions from generated content."""
+    normalized_prompt = normalize_matching_text(prompt)
+    normalized_restaurant = normalize_matching_text(restaurant_name)
+    cleaned_suggestions: list[str] = []
+
+    for suggestion in suggestions:
+        clean_text = " ".join(suggestion.split()).strip(" -•")
+        if not clean_text:
+            continue
+
+        normalized_suggestion = normalize_matching_text(clean_text)
+        if normalized_prompt and normalized_prompt in normalized_suggestion:
+            continue
+        if normalized_restaurant and normalized_restaurant in normalized_suggestion:
+            continue
+
+        if clean_text[-1] not in ".!?":
+            clean_text = f"{clean_text}."
+
+        if clean_text not in cleaned_suggestions:
+            cleaned_suggestions.append(clean_text)
+
+    return cleaned_suggestions
 
 
 def generate_ai_task_suggestions(
@@ -311,17 +417,22 @@ def generate_ai_task_suggestions(
     """Generate task suggestions with Hugging Face when configured."""
     token = app.config.get("HUGGING_FACE_API_TOKEN", "")
     model_url = app.config.get("HUGGING_FACE_MODEL_URL", "")
+    fallback_suggestions = build_fallback_suggestions(prompt)
 
     if not isinstance(token, str) or not isinstance(model_url, str):
-        return build_fallback_suggestions(manager, prompt), "fallback"
+        return fallback_suggestions, "fallback"
 
     if not token or not model_url:
-        return build_fallback_suggestions(manager, prompt), "fallback"
+        return fallback_suggestions, "fallback"
 
     payload = {
         "inputs": (
-            "Generate 3 short restaurant team task suggestions in French. "
-            f"Restaurant: {manager.restaurant_name}. "
+            "Generate exactly 3 short and actionable task suggestions in"
+            " French for a restaurant manager. "
+            "Each suggestion must start with a verb. "
+            "Do not repeat the manager request verbatim. "
+            "Do not mention the restaurant name. "
+            "Return only the task suggestions. "
             f"Manager request: {prompt}"
         ),
         "parameters": {
@@ -350,7 +461,7 @@ def generate_ai_task_suggestions(
         urllib_error.HTTPError,
         json.JSONDecodeError,
     ):
-        return build_fallback_suggestions(manager, prompt), "fallback"
+        return fallback_suggestions, "fallback"
 
     if isinstance(response_payload, list) and response_payload:
         generated_text = str(response_payload[0].get("generated_text", "")).strip()
@@ -360,10 +471,20 @@ def generate_ai_task_suggestions(
         generated_text = ""
 
     parsed_items = parse_suggestion_items(generated_text)
-    if parsed_items:
-        return parsed_items, "hugging_face"
+    cleaned_items = clean_generated_suggestions(
+        parsed_items,
+        prompt,
+        manager.restaurant_name,
+    )
+    if cleaned_items:
+        for fallback_suggestion in fallback_suggestions:
+            if fallback_suggestion not in cleaned_items:
+                cleaned_items.append(fallback_suggestion)
+            if len(cleaned_items) == 3:
+                break
+        return cleaned_items[:3], "hugging_face"
 
-    return build_fallback_suggestions(manager, prompt), "fallback"
+    return fallback_suggestions, "fallback"
 
 
 def save_ai_suggestion_history(
