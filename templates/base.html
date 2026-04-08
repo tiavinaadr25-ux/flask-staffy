@@ -16,19 +16,19 @@
   {% if request.endpoint != 'home' %}
     <header class="site-header">
       <div class="container nav-row">
-        <a class="logo" href="{{ url_for('home') }}">
+        <a class="logo" href="{% if current_manager %}{{ url_for('dashboard') }}{% else %}{{ url_for('home') }}{% endif %}">
           <span class="logo-icon">S</span>
           <span class="logo-text"><strong>Staff</strong><span class="logo-accent">ly</span></span>
         </a>
 
         <nav class="site-nav">
-          <a href="{{ url_for('home') }}">Accueil</a>
           {% if current_manager %}
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('employees') }}">Employés</a>
             <a href="{{ url_for('tasks') }}">Tâches</a>
             <a href="{{ url_for('leave_requests') }}">Congés</a>
           {% else %}
+            <a href="{{ url_for('home') }}">Accueil</a>
             <a href="{{ url_for('register') }}">Créer un compte</a>
             <a href="{{ url_for('login') }}">Connexion</a>
           {% endif %}
