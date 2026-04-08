@@ -6,51 +6,58 @@
   <title>{% block title %}Staffly{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% if request.endpoint == 'home' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />
+  {% endif %}
 </head>
 <body>
-  <header class="site-header">
-    <div class="container nav-row">
-      <a class="logo" href="{{ url_for('home') }}">
-        <span class="logo-icon">S</span>
-        <span class="logo-text"><strong>Staff</strong><span class="logo-accent">ly</span></span>
-      </a>
+  {% if request.endpoint != 'home' %}
+    <header class="site-header">
+      <div class="container nav-row">
+        <a class="logo" href="{{ url_for('home') }}">
+          <span class="logo-icon">S</span>
+          <span class="logo-text"><strong>Staff</strong><span class="logo-accent">ly</span></span>
+        </a>
 
-      <nav class="site-nav">
-        <a href="{{ url_for('home') }}">Accueil</a>
+        <nav class="site-nav">
+          <a href="{{ url_for('home') }}">Accueil</a>
+          {% if current_manager %}
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('employees') }}">Employés</a>
+            <a href="{{ url_for('tasks') }}">Tâches</a>
+            <a href="{{ url_for('leave_requests') }}">Congés</a>
+          {% else %}
+            <a href="{{ url_for('register') }}">Créer un compte</a>
+            <a href="{{ url_for('login') }}">Connexion</a>
+          {% endif %}
+        </nav>
+
         {% if current_manager %}
-          <a href="{{ url_for('dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('employees') }}">Employés</a>
-          <a href="{{ url_for('tasks') }}">Tâches</a>
-          <a href="{{ url_for('leave_requests') }}">Congés</a>
-        {% else %}
-          <a href="{{ url_for('register') }}">Créer un compte</a>
-          <a href="{{ url_for('login') }}">Connexion</a>
+          <form action="{{ url_for('logout') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <button class="button button-secondary" type="submit">Se déconnecter</button>
+          </form>
         {% endif %}
-      </nav>
+      </div>
+    </header>
+  {% endif %}
 
-      {% if current_manager %}
-        <form action="{{ url_for('logout') }}" method="POST">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-          <button class="button button-secondary" type="submit">Se déconnecter</button>
-        </form>
-      {% endif %}
-    </div>
-  </header>
-
-  <main class="page-shell">
-    <div class="container">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="flash-stack">
-            {% for category, message in messages %}
-              <div class="flash flash-{{ category }}">{{ message }}</div>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
-    </div>
+  <main class="page-shell{% if request.endpoint == 'home' %} page-shell-home{% endif %}">
+    {% if request.endpoint != 'home' %}
+      <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-stack">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+    {% endif %}
 
     {% block content %}{% endblock %}
   </main>

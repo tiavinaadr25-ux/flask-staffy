@@ -4,7 +4,14 @@
 
 {% block content %}
   <section class="hero">
-    <div class="container hero-content">
+    <nav class="navbar">
+      <div class="logo">
+        <div class="logo-icon">S</div>
+        <span class="logo-text"><strong>Staff</strong><span class="logo-accent">ly</span></span>
+      </div>
+    </nav>
+
+    <div class="hero-content">
       <h1 class="hero-title">
         Gérez votre équipe<br />
         <span class="hero-highlight">sans effort</span> au quotidien
@@ -13,10 +20,7 @@
         Staffly est l'outil pensé pour les managers de restaurants.<br />
         Présences, tâches, notifications et congés.
       </p>
-      <div class="hero-actions">
-        <a class="btn-primary" href="{{ url_for('register') }}">Créer mon compte →</a>
-        <a class="btn-secondary" href="{{ url_for('login') }}">Connexion manager</a>
-      </div>
+      <a href="{{ url_for('register') }}" class="btn-primary">Commencer gratuitement →</a>
     </div>
   </section>
 
@@ -97,5 +101,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
 {% endblock %}
