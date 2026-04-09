@@ -736,12 +736,6 @@ def register_routes(app: Flask) -> None:
                 prompt=prompt,
                 suggestions=suggestions or [],
                 generation_source=generation_source,
-                suggestion_history=load_ai_suggestion_history(app, manager),
-                mongo_enabled=bool(app.config.get("MONGO_URI")),
-                hugging_face_enabled=bool(
-                    app.config.get("HUGGING_FACE_API_TOKEN")
-                    and app.config.get("HUGGING_FACE_MODEL_URL")
-                ),
             ),
             status_code,
         )

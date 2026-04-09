@@ -14,69 +14,43 @@
         <a class="btn-primary small-action" href="{{ url_for('task_create') }}">Ajouter une tâche</a>
       </div>
 
-      <div class="ai-layout">
-        <article class="card ai-card">
-          <div class="section-head">
-            <h2>Suggestion de tâches</h2>
+      <article class="card ai-card">
+        <div class="section-head">
+          <h2>Suggestion de tâches</h2>
+        </div>
+
+        <p class="page-intro">
+          Décris ton service ou ton contexte, et Staffly te propose des idées de tâches à lancer.
+        </p>
+
+        <form method="POST" class="auth-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+
+          <div class="form-group">
+            <label for="prompt">Contexte</label>
+            <textarea
+              id="prompt"
+              name="prompt"
+              rows="4"
+              placeholder="Ex : service du midi complet avec terrasse et deux absences"
+              required
+            >{{ prompt }}</textarea>
           </div>
 
-          <p class="page-intro">
-            Décris ton service ou ton contexte, et Staffly te propose des idées de tâches à lancer.
-          </p>
+          <button class="btn-primary auth-submit" type="submit">Générer des suggestions</button>
+        </form>
 
-          <form method="POST" class="auth-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-
-            <div class="form-group">
-              <label for="prompt">Contexte</label>
-              <textarea
-                id="prompt"
-                name="prompt"
-                rows="4"
-                placeholder="Ex : service du midi complet avec terrasse et deux absences"
-                required
-              >{{ prompt }}</textarea>
-            </div>
-
-            <button class="btn-primary auth-submit" type="submit">Générer des suggestions</button>
-          </form>
-
-          {% if suggestions %}
-            <div class="ai-result-box">
-              <h2>Suggestions générées</h2>
-              <ul class="suggestion-list">
-                {% for suggestion in suggestions %}
-                  <li>{{ suggestion }}</li>
-                {% endfor %}
-              </ul>
-            </div>
-          {% endif %}
-        </article>
-
-        <article class="card ai-card">
-          <div class="section-head">
-            <h2>Historique récent</h2>
-          </div>
-
-          {% if suggestion_history %}
-            <div class="history-list">
-              {% for entry in suggestion_history %}
-                <section class="history-item">
-                  <p class="history-prompt">{{ entry.prompt }}</p>
-                  <p class="history-date">{{ entry.created_at }}</p>
-                  <ul class="suggestion-list compact-list">
-                    {% for suggestion in entry.suggestions %}
-                      <li>{{ suggestion }}</li>
-                    {% endfor %}
-                  </ul>
-                </section>
+        {% if suggestions %}
+          <div class="ai-result-box">
+            <h2>Suggestions générées</h2>
+            <ul class="suggestion-list">
+              {% for suggestion in suggestions %}
+                <li>{{ suggestion }}</li>
               {% endfor %}
-            </div>
-          {% else %}
-            <p class="page-intro">Aucune suggestion enregistrée pour le moment.</p>
-          {% endif %}
-        </article>
-      </div>
+            </ul>
+          </div>
+        {% endif %}
+      </article>
 
       <div class="card table-card">
         <div class="section-head">
