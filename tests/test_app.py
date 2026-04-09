@@ -33,6 +33,7 @@ def test_home_page_loads(client) -> None:
 
     assert response.status_code == 200
     assert b"G\xc3\xa9rez votre \xc3\xa9quipe" in response.data
+    assert b"Demander une d\xc3\xa9mo" in response.data
 
 
 def test_dashboard_requires_login(client) -> None:

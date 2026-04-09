@@ -20,7 +20,14 @@
         Staffly est l'outil pensé pour les managers de restaurants.<br />
         Employés, tâches et suivi opérationnel.
       </p>
-      <a href="{{ url_for('register') }}" class="btn-primary">Commencer gratuitement →</a>
+      <div class="hero-actions">
+        <a href="{{ url_for('register') }}" class="btn-primary">Commencer gratuitement →</a>
+        <a
+          href="{{ tally_demo_url or url_for('register') }}"
+          class="btn-ghost"
+          {% if tally_demo_url %}target="_blank" rel="noreferrer"{% endif %}
+        >Demander une démo</a>
+      </div>
     </div>
   </section>
 

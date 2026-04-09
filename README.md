@@ -15,6 +15,7 @@ code quality, and deployment preparation.
 - PostgreSQL-ready configuration for localhost and Railway
 - AI task suggestions page
 - MongoDB-ready history for AI suggestions
+- Tally-ready demo request button on the landing page
 
 ## Local setup
 
@@ -63,6 +64,7 @@ code quality, and deployment preparation.
 - `MONGO_COLLECTION_NAME` selects the MongoDB collection name
 - `HUGGING_FACE_API_TOKEN` enables real AI calls
 - `HUGGING_FACE_MODEL_URL` points to your Hugging Face inference endpoint
+- `TALLY_DEMO_URL` links the landing page button to your Tally form
 
 By default, the project uses the Hugging Face serverless inference pattern with
 `https://api-inference.huggingface.co/models/<MODEL_ID>`.

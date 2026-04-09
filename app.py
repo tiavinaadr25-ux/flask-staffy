@@ -517,6 +517,23 @@ def save_ai_suggestion_history(
     return True
 
 
+def format_history_datetime(raw_value: Any) -> str:
+    """Format a stored datetime value into a short French display string."""
+    if isinstance(raw_value, datetime):
+        parsed_datetime = raw_value.astimezone()
+    else:
+        raw_text = str(raw_value).strip()
+        if not raw_text:
+            return ""
+
+        try:
+            parsed_datetime = datetime.fromisoformat(raw_text.replace("Z", "+00:00"))
+        except ValueError:
+            return raw_text
+
+    return parsed_datetime.astimezone().strftime("%d/%m/%Y à %H:%M")
+
+
 def load_ai_suggestion_history(
     app: Flask,
     manager: Manager,
@@ -546,7 +563,9 @@ def load_ai_suggestion_history(
                 "prompt": str(document.get("prompt", "")),
                 "suggestions": list(document.get("suggestions", [])),
                 "source": str(document.get("source", "fallback")),
-                "created_at": str(document.get("created_at", "")),
+                "created_at": format_history_datetime(
+                    document.get("created_at", "")
+                ),
             }
         )
 
@@ -562,6 +581,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SQLALCHEMY_DATABASE_URI=normalize_database_url(
             os.getenv("DATABASE_URL", "sqlite:///staffly_dev.db")
         ),
+        TALLY_DEMO_URL=os.getenv("TALLY_DEMO_URL", ""),
         MONGO_URI=os.getenv("MONGO_URI", os.getenv("MONGO_URL", "")),
         MONGO_DB_NAME=os.getenv("MONGO_DB_NAME", "staffly_ai"),
         MONGO_COLLECTION_NAME=os.getenv(
@@ -604,6 +624,7 @@ def register_template_context(app: Flask) -> None:
         return {
             "csrf_token": get_or_create_csrf_token(),
             "current_manager": get_current_manager(),
+            "tally_demo_url": app.config.get("TALLY_DEMO_URL", ""),
         }
 
 
