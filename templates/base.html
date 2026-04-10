@@ -24,7 +24,6 @@
         <nav class="site-nav">
           {% if current_manager %}
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('employees') }}">Employés</a>
             <a href="{{ url_for('tasks') }}">Tâches</a>
           {% else %}
             <a href="{{ url_for('home') }}">Accueil</a>

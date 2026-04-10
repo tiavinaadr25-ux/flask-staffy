@@ -850,12 +850,6 @@ def register_routes(app: Flask) -> None:
         manager = get_current_manager()
         assert manager is not None
 
-        employees = db.session.scalars(
-            select(Employee)
-            .where(Employee.manager_id == manager.id)
-            .order_by(Employee.created_at.desc())
-            .limit(5)
-        ).all()
         tasks = db.session.scalars(
             select(Task)
             .where(Task.manager_id == manager.id)
@@ -866,13 +860,8 @@ def register_routes(app: Flask) -> None:
         return render_template(
             "dashboard.html",
             manager=manager,
-            employee_count=len(manager.employees),
             task_count=len(manager.tasks),
-            is_workspace_empty=(
-                len(manager.employees) == 0
-                and len(manager.tasks) == 0
-            ),
-            employees=employees,
+            is_workspace_empty=len(manager.tasks) == 0,
             tasks=tasks,
         )
 
@@ -1004,19 +993,12 @@ def register_routes(app: Flask) -> None:
         manager = get_current_manager()
         assert manager is not None
 
-        employee_list = db.session.scalars(
-            select(Employee)
-            .where(Employee.manager_id == manager.id)
-            .order_by(Employee.full_name.asc())
-        ).all()
-
         if request.method == "POST":
             validate_csrf_token(request.form.get("csrf_token"))
 
             title = request.form.get("title", "").strip()
             description = request.form.get("description", "").strip()
             status = request.form.get("status", "todo").strip() or "todo"
-            employee_id_raw = request.form.get("employee_id", "").strip()
             due_date_raw = request.form.get("due_date", "").strip()
 
             if not title:
@@ -1025,20 +1007,12 @@ def register_routes(app: Flask) -> None:
                     render_template(
                         "task_form.html",
                         task=None,
-                        employees=employee_list,
                     ),
                     400,
                 )
 
-            employee_id = int(employee_id_raw) if employee_id_raw else None
-            if employee_id is not None:
-                employee = get_owned_employee_or_404(employee_id)
-            else:
-                employee = None
-
             task = Task(
                 manager_id=manager.id,
-                employee_id=employee.id if employee is not None else None,
                 title=title,
                 description=description,
                 status=status,
@@ -1049,20 +1023,12 @@ def register_routes(app: Flask) -> None:
             flash("Task created successfully.", "success")
             return redirect(url_for("tasks"))
 
-        return render_template("task_form.html", task=None, employees=employee_list)
+        return render_template("task_form.html", task=None)
 
     @app.route("/tasks/<int:task_id>/edit", methods=["GET", "POST"])
     @login_required
     def task_edit(task_id: int) -> ResponseReturnValue:
-        manager = get_current_manager()
-        assert manager is not None
         task = get_owned_task_or_404(task_id)
-
-        employee_list = db.session.scalars(
-            select(Employee)
-            .where(Employee.manager_id == manager.id)
-            .order_by(Employee.full_name.asc())
-        ).all()
 
         if request.method == "POST":
             validate_csrf_token(request.form.get("csrf_token"))
@@ -1070,13 +1036,6 @@ def register_routes(app: Flask) -> None:
             task.title = request.form.get("title", "").strip()
             task.description = request.form.get("description", "").strip()
             task.status = request.form.get("status", "todo").strip() or "todo"
-
-            employee_id_raw = request.form.get("employee_id", "").strip()
-            task.employee_id = int(employee_id_raw) if employee_id_raw else None
-
-            if task.employee_id is not None:
-                get_owned_employee_or_404(task.employee_id)
-
             task.due_date = parse_optional_date(
                 request.form.get("due_date", "").strip()
             )
@@ -1087,7 +1046,6 @@ def register_routes(app: Flask) -> None:
                     render_template(
                         "task_form.html",
                         task=task,
-                        employees=employee_list,
                     ),
                     400,
                 )
@@ -1096,7 +1054,7 @@ def register_routes(app: Flask) -> None:
             flash("Task updated successfully.", "success")
             return redirect(url_for("tasks"))
 
-        return render_template("task_form.html", task=task, employees=employee_list)
+        return render_template("task_form.html", task=task)
 
     @app.route("/tasks/<int:task_id>/delete", methods=["POST"])
     @login_required

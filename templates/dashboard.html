@@ -15,10 +15,6 @@
 
       <div class="stats-grid">
         <article class="card stat-card">
-          <span class="metric-value">{{ employee_count }}</span>
-          <span class="metric-label">employé(s)</span>
-        </article>
-        <article class="card stat-card">
           <span class="metric-value">{{ task_count }}</span>
           <span class="metric-label">tâche(s)</span>
         </article>
@@ -29,8 +25,8 @@
           <h2>Actions rapides</h2>
         </div>
         <div class="quick-actions-grid">
-          <a class="btn-primary" href="{{ url_for('employee_create') }}">Ajouter un employé</a>
-          <a class="btn-secondary" href="{{ url_for('task_create') }}">Créer une tâche</a>
+          <a class="btn-primary" href="{{ url_for('task_create') }}">Créer une tâche</a>
+          <a class="btn-secondary" href="{{ url_for('tasks') }}">Voir les tâches</a>
         </div>
       </div>
 
@@ -39,26 +35,12 @@
           <p class="eyebrow">Première connexion</p>
           <h2>Votre espace Staffly est prêt</h2>
           <p class="page-intro">
-            Commencez par ajouter votre première personne, puis créez vos premières tâches pour voir le SaaS prendre vie.
+            Commencez par créer vos premières tâches ou utilisez la suggestion IA pour préparer votre service.
           </p>
         </div>
       {% endif %}
 
       <div class="card-grid">
-        <article class="card">
-          <div class="section-head">
-            <h2>Employés récents</h2>
-            <a href="{{ url_for('employees') }}">Voir tout</a>
-          </div>
-          <ul class="clean-list">
-            {% for employee in employees %}
-              <li>{{ employee.full_name }} - {{ employee.role_title }}</li>
-            {% else %}
-              <li>Aucun employé pour le moment.</li>
-            {% endfor %}
-          </ul>
-        </article>
-
         <article class="card">
           <div class="section-head">
             <h2>Tâches récentes</h2>

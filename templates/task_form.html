@@ -23,19 +23,6 @@
           </div>
 
           <div class="form-group">
-            <label for="employee_id">Employé assigné</label>
-            <select id="employee_id" name="employee_id">
-              <option value="">Aucun employé</option>
-              {% set selected_employee_id = task.employee_id if task else None %}
-              {% for employee in employees %}
-                <option value="{{ employee.id }}" {% if selected_employee_id == employee.id %}selected{% endif %}>
-                  {{ employee.full_name }}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="form-group">
             <label for="status">Statut</label>
             {% set current_status = task.status if task else 'todo' %}
             <select id="status" name="status">

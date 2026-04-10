@@ -60,7 +60,6 @@
           <thead>
             <tr>
               <th>Titre</th>
-              <th>Employé</th>
               <th>Statut</th>
               <th>Échéance</th>
               <th>Actions</th>
@@ -70,7 +69,6 @@
             {% for task in tasks %}
               <tr>
                 <td>{{ task.title }}</td>
-                <td>{{ task.employee.full_name if task.employee else "-" }}</td>
                 <td><span class="badge">{{ task.status }}</span></td>
                 <td>{{ task.due_date.isoformat() if task.due_date else "-" }}</td>
                 <td class="actions-cell">
@@ -83,7 +81,7 @@
               </tr>
             {% else %}
               <tr>
-                <td colspan="5">Aucune tâche enregistrée pour le moment.</td>
+                <td colspan="4">Aucune tâche enregistrée pour le moment.</td>
               </tr>
             {% endfor %}
           </tbody>

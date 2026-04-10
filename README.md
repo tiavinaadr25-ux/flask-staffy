@@ -7,13 +7,11 @@ code quality, and deployment preparation.
 ## Main features
 
 - Manager login with password hashing
-- Dashboard with staff, tasks, and leave request metrics
-- Employee CRUD
+- Dashboard with task metrics
 - Task CRUD
-- Leave request management
 - SQLAlchemy relational models
 - PostgreSQL-ready configuration for localhost and Railway
-- AI task suggestions page
+- AI task suggestions inside the task page
 - MongoDB-ready history for AI suggestions
 - Tally-ready demo request button on the landing page
 
@@ -70,7 +68,7 @@ By default, the project uses the Hugging Face serverless inference pattern with
 `https://api-inference.huggingface.co/models/<MODEL_ID>`.
 The provided `.env.example` uses a small instruct model suited for demo flows.
 
-Without these variables, the AI suggestion page still works in local fallback mode.
+Without these variables, the task suggestion feature still works in local fallback mode.
 
 Demo account:
 

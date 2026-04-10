@@ -118,30 +118,6 @@ def test_register_rejects_duplicate_email(client) -> None:
     assert b"An account already exists with this email." in register_response.data
 
 
-def test_employee_can_be_created(client) -> None:
-    login_manager(client)
-
-    form_page = client.get("/employees/new")
-    csrf_token = extract_csrf_token(form_page.data.decode("utf-8"))
-
-    response = client.post(
-        "/employees/new",
-        data={
-            "csrf_token": csrf_token,
-            "full_name": "New Employee",
-            "role_title": "Runner",
-            "email": "new.employee@staffly.com",
-            "phone": "+33 6 22 22 22 22",
-            "status": "active",
-        },
-        follow_redirects=True,
-    )
-
-    assert response.status_code == 200
-    assert b"Employee created successfully." in response.data
-    assert b"New Employee" in response.data
-
-
 def test_task_can_be_created(client) -> None:
     login_manager(client)
 
@@ -154,7 +130,6 @@ def test_task_can_be_created(client) -> None:
             "csrf_token": csrf_token,
             "title": "Open the terrace area",
             "description": "Prepare the terrace before service.",
-            "employee_id": "1",
             "status": "todo",
             "due_date": "2026-04-16",
         },
