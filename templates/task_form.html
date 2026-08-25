@@ -9,26 +9,27 @@
         <p class="eyebrow">Gestion des tâches</p>
         <h1 class="section-title">{% if task %}Modifier une tâche{% else %}Ajouter une tâche{% endif %}</h1>
 
-        <form method="POST" class="auth-form">
+        <form method="POST" class="auth-form" aria-label="Formulaire de gestion de tâche">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
           <div class="form-group">
             <label for="title">Titre</label>
-            <input id="title" name="title" type="text" value="{{ task.title if task else '' }}" required />
+            <input id="title" name="title" type="text" value="{{ task.title if task else '' }}" maxlength="140" required />
           </div>
 
           <div class="form-group">
             <label for="description">Description</label>
-            <textarea id="description" name="description" rows="4">{{ task.description if task else '' }}</textarea>
+            <textarea id="description" name="description" rows="4" aria-describedby="description-help">{{ task.description if task else '' }}</textarea>
+            <p class="field-help" id="description-help">Ajoutez le contexte utile pour l'équipe si besoin.</p>
           </div>
 
           <div class="form-group">
             <label for="status">Statut</label>
             {% set current_status = task.status if task else 'todo' %}
             <select id="status" name="status">
-              <option value="todo" {% if current_status == 'todo' %}selected{% endif %}>todo</option>
-              <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>in_progress</option>
-              <option value="done" {% if current_status == 'done' %}selected{% endif %}>done</option>
+              <option value="todo" {% if current_status == 'todo' %}selected{% endif %}>À faire</option>
+              <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>En cours</option>
+              <option value="done" {% if current_status == 'done' %}selected{% endif %}>Terminée</option>
             </select>
           </div>
 

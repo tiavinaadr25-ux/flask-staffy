@@ -11,6 +11,15 @@ lint:
 test:
 	$(PYTHON) -m pytest -q
 
+migration-current:
+	$(PYTHON) -m alembic current
+
+migration-upgrade:
+	$(PYTHON) -m alembic upgrade head
+
+migration-downgrade:
+	$(PYTHON) -m alembic downgrade -1
+
 run:
 	$(PYTHON) -m flask --app app run
 

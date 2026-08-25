@@ -48,7 +48,7 @@
           </div>
           <ul class="clean-list">
             {% for task in tasks %}
-              <li>{{ task.title }} - {{ task.status }}</li>
+              <li>{{ task.title }} - {% if task.status == 'todo' %}À faire{% elif task.status == 'in_progress' %}En cours{% elif task.status == 'done' %}Terminée{% else %}{{ task.status }}{% endif %}</li>
             {% else %}
               <li>Aucune tâche pour le moment.</li>
             {% endfor %}

@@ -13,43 +13,44 @@
   {% endif %}
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Aller au contenu principal</a>
   {% if request.endpoint != 'home' %}
-    <header class="site-header">
+    <header class="site-header" role="banner">
       <div class="container nav-row">
         <a class="logo" href="{% if current_manager %}{{ url_for('dashboard') }}{% else %}{{ url_for('home') }}{% endif %}">
-          <span class="logo-icon">S</span>
+          <span class="logo-icon" aria-hidden="true">S</span>
           <span class="logo-text"><strong>Staff</strong><span class="logo-accent">ly</span></span>
         </a>
 
-        <nav class="site-nav">
+        <nav class="site-nav" aria-label="Navigation principale">
           {% if current_manager %}
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('tasks') }}">Tâches</a>
+            <a href="{{ url_for('dashboard') }}" {% if request.endpoint == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+            <a href="{{ url_for('tasks') }}" {% if request.endpoint in ['tasks', 'task_create', 'task_edit'] %}aria-current="page"{% endif %}>Tâches</a>
           {% else %}
-            <a href="{{ url_for('home') }}">Accueil</a>
-            <a href="{{ url_for('register') }}">Créer un compte</a>
-            <a href="{{ url_for('login') }}">Connexion</a>
+            <a href="{{ url_for('home') }}" {% if request.endpoint == 'home' %}aria-current="page"{% endif %}>Accueil</a>
+            <a href="{{ url_for('register') }}" {% if request.endpoint == 'register' %}aria-current="page"{% endif %}>Créer un compte</a>
+            <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' %}aria-current="page"{% endif %}>Connexion</a>
           {% endif %}
         </nav>
 
         {% if current_manager %}
           <form action="{{ url_for('logout') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-            <button class="button button-secondary" type="submit">Se déconnecter</button>
+            <button class="button button-secondary" type="submit" aria-label="Se déconnecter de l'espace Staffly">Se déconnecter</button>
           </form>
         {% endif %}
       </div>
     </header>
   {% endif %}
 
-  <main class="page-shell{% if request.endpoint == 'home' %} page-shell-home{% endif %}">
+  <main id="main-content" class="page-shell{% if request.endpoint == 'home' %} page-shell-home{% endif %}" tabindex="-1">
     {% if request.endpoint != 'home' %}
       <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            <div class="flash-stack">
+            <div class="flash-stack" aria-live="polite" aria-atomic="true">
               {% for category, message in messages %}
-                <div class="flash flash-{{ category }}">{{ message }}</div>
+                <div class="flash flash-{{ category }}" {% if category == 'error' %}role="alert"{% else %}role="status"{% endif %}>{{ message }}</div>
               {% endfor %}
             </div>
           {% endif %}

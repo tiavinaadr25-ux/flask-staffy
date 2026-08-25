@@ -35,6 +35,30 @@ tests/                  Automated tests
 docs/cda/               CDA-oriented technical documentation
 ```
 
+## Database scripts
+
+SQL scripts are available in `database/`:
+
+- `init_local_postgres.sql` creates the local PostgreSQL role and database
+- `schema_postgresql.sql` creates the relational schema
+- `test_fixture_postgresql.sql` provides a basic SQL fixture template
+
+## Database migrations
+
+The project now includes an Alembic migration setup:
+
+```bash
+make migration-current
+make migration-upgrade
+make migration-downgrade
+```
+
+Files:
+
+- `alembic.ini`
+- `migrations/env.py`
+- `migrations/versions/20260825_01_initial_staffly_schema.py`
+
 ## Local setup
 
 1. Create and activate a virtual environment:
@@ -84,6 +108,7 @@ docker compose up --build
 ```
 
 The web application is then available at `http://localhost:8000`.
+The health endpoint is available at `http://localhost:8000/health`.
 
 To stop the stack:
 
@@ -152,3 +177,6 @@ Additional technical documentation is available in:
 - `docs/cda/plan-tests-cda.md`
 - `docs/cda/devops-cda.md`
 - `docs/cda/sequence-diagrams.md`
+- `docs/cda/accessibilite-eco-veille.md`
+- `docs/cda/base-donnees-migrations.md`
+- `docs/cda/dossier-projet-cda.md`

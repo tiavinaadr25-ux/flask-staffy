@@ -34,6 +34,22 @@ def test_home_page_loads(client) -> None:
     assert response.status_code == 200
     assert b"G\xc3\xa9rez votre \xc3\xa9quipe" in response.data
     assert b"Demander une d\xc3\xa9mo" in response.data
+    assert b"Aller au contenu principal" in response.data
+
+
+def test_health_endpoint_returns_ok(client) -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json == {"status": "ok", "application": "staffly"}
+
+
+def test_security_headers_are_present(client) -> None:
+    response = client.get("/")
+
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert "Content-Security-Policy" in response.headers
 
 
 def test_dashboard_requires_login(client) -> None:

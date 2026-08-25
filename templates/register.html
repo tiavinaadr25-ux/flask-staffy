@@ -13,27 +13,28 @@
           </p>
         </div>
 
-        <form method="POST" class="auth-form">
+        <form method="POST" class="auth-form" aria-label="Formulaire de création de compte manager">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
           <div class="form-group">
             <label for="full_name">Nom complet</label>
-            <input id="full_name" name="full_name" type="text" placeholder="Ex : Tiavina Rakoto" required />
+            <input id="full_name" name="full_name" type="text" placeholder="Ex : Tiavina Rakoto" autocomplete="name" required />
           </div>
 
           <div class="form-group">
             <label for="restaurant_name">Nom de l'établissement</label>
-            <input id="restaurant_name" name="restaurant_name" type="text" placeholder="Ex : Staffly Bistro" required />
+            <input id="restaurant_name" name="restaurant_name" type="text" placeholder="Ex : Staffly Bistro" autocomplete="organization" required />
           </div>
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="manager@staffly.com" required />
+            <input id="email" name="email" type="email" placeholder="manager@staffly.com" autocomplete="email" inputmode="email" required />
           </div>
 
           <div class="form-group">
             <label for="password">Mot de passe</label>
-            <input id="password" name="password" type="password" placeholder="8 caractères minimum" required />
+            <input id="password" name="password" type="password" placeholder="8 caractères minimum" autocomplete="new-password" minlength="8" aria-describedby="password-help" required />
+            <p class="field-help" id="password-help">Utilisez au minimum 8 caractères.</p>
           </div>
 
           <div class="form-group">
@@ -43,6 +44,7 @@
               name="password_confirmation"
               type="password"
               placeholder="Retapez votre mot de passe"
+              autocomplete="new-password"
               required
             />
           </div>

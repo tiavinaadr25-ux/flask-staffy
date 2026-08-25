@@ -13,17 +13,17 @@
           </p>
         </div>
 
-        <form method="POST" class="auth-form">
+        <form method="POST" class="auth-form" aria-label="Formulaire de connexion manager">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="manager@staffly.com" required />
+            <input id="email" name="email" type="email" placeholder="manager@staffly.com" autocomplete="email" inputmode="email" required />
           </div>
 
           <div class="form-group">
             <label for="password">Mot de passe</label>
-            <input id="password" name="password" type="password" placeholder="Entrez votre mot de passe" required />
+            <input id="password" name="password" type="password" placeholder="Entrez votre mot de passe" autocomplete="current-password" required />
           </div>
 
           <button class="btn-primary auth-submit" type="submit">Se connecter</button>

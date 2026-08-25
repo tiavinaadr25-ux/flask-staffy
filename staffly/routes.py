@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from flask import url_for
 from flask.typing import ResponseReturnValue
 
 from .extensions import db
@@ -63,6 +64,11 @@ def register_routes(app: Flask) -> None:
             employee_count=count_rows(Employee),
             task_count=count_rows(Task),
         )
+
+    @app.get("/health")
+    def health() -> ResponseReturnValue:
+        """Expose a lightweight health endpoint for ops and deployments."""
+        return jsonify({"status": "ok", "application": "staffly"}), 200
 
     @app.route("/register", methods=["GET", "POST"])
     @app.route("/inscription", methods=["GET", "POST"])
