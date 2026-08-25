@@ -1,0 +1,14 @@
+.git
+.github
+.pytest_cache
+.venv
+__pycache__
+instance
+docs/.DS_Store
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.log
+.env

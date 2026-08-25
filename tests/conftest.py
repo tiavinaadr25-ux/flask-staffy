@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -15,12 +16,13 @@ from app import Employee, Manager, create_app, db  # noqa: E402
 @pytest.fixture()
 def app(tmp_path: Path):
     database_path = tmp_path / "staffly_test.db"
+    database_url = os.getenv("TEST_DATABASE_URL", f"sqlite:///{database_path}")
 
     flask_app = create_app(
         {
             "TESTING": True,
             "SECRET_KEY": "test-secret-key",
-            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{database_path}",
+            "SQLALCHEMY_DATABASE_URI": database_url,
             "SESSION_COOKIE_SECURE": False,
         }
     )

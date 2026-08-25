@@ -4,7 +4,7 @@ import re
 
 from sqlalchemy import select
 
-from app import Manager, db
+from app import Manager, Task, db
 
 
 def extract_csrf_token(html: str) -> str:
@@ -164,3 +164,48 @@ def test_task_suggestions_can_be_generated_in_fallback_mode(client) -> None:
     assert b"Pr\xc3\xa9parer la terrasse" in response.data
     assert b"Faire un briefing rapide" in response.data
     assert b"Test Bistro" not in response.data
+
+
+def test_task_creation_requires_csrf_token(client) -> None:
+    login_manager(client)
+
+    response = client.post(
+        "/tasks/new",
+        data={
+            "title": "Missing CSRF",
+            "description": "This should fail.",
+            "status": "todo",
+            "due_date": "2026-04-16",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 400
+    assert b"Missing security token." in response.data
+
+
+def test_manager_cannot_edit_another_manager_task(client, app) -> None:
+    with app.app_context():
+        other_manager = Manager(
+            full_name="Other Manager",
+            restaurant_name="Other Bistro",
+            email="other.manager@staffly.com",
+        )
+        other_manager.set_password("Staffly789!")
+        db.session.add(other_manager)
+        db.session.flush()
+
+        foreign_task = Task(
+            manager_id=other_manager.id,
+            title="Private task",
+            description="Should not be visible.",
+            status="todo",
+        )
+        db.session.add(foreign_task)
+        db.session.commit()
+        foreign_task_id = foreign_task.id
+
+    login_manager(client)
+    response = client.get(f"/tasks/{foreign_task_id}/edit", follow_redirects=False)
+
+    assert response.status_code == 404

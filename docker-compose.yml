@@ -1,0 +1,38 @@
+services:
+  web:
+    build: .
+    command: gunicorn app:app --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: change-this-secret-before-production
+      DATABASE_URL: postgresql://staffly_user:change_me@postgres:5432/staffly_local
+      MONGO_URI: mongodb://mongo:27017/
+      MONGO_DB_NAME: staffly_ai
+      MONGO_COLLECTION_NAME: ai_suggestions
+      SESSION_COOKIE_SECURE: "0"
+    depends_on:
+      - postgres
+      - mongo
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: staffly_local
+      POSTGRES_USER: staffly_user
+      POSTGRES_PASSWORD: change_me
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  postgres_data:
+  mongo_data:

@@ -1,8 +1,9 @@
 # Staffly Flask MVP
 
-Staffly is a Flask web application built to support RNCP Bloc 2 expectations:
-secure server-side features, a relational database, SQL access layers, testing,
-code quality, and deployment preparation.
+Staffly is a Flask web application built to support RNCP Bloc 2 expectations
+and to move toward CDA expectations: layered architecture, secure server-side
+features, relational and NoSQL data access, automated tests, code quality, and
+deployment preparation.
 
 ## Main features
 
@@ -10,10 +11,29 @@ code quality, and deployment preparation.
 - Dashboard with task metrics
 - Task CRUD
 - SQLAlchemy relational models
+- Layered application package (`staffly/`)
 - PostgreSQL-ready configuration for localhost and Railway
 - AI task suggestions inside the task page
 - MongoDB-ready history for AI suggestions
 - Tally-ready demo request button on the landing page
+- Docker and Docker Compose support
+- GitHub Actions CI pipeline
+
+## Application structure
+
+```txt
+app.py                  Entry point for Flask, Gunicorn, and tests
+staffly/__init__.py     App factory
+staffly/config.py       Environment and application settings
+staffly/extensions.py   Flask extensions
+staffly/models.py       SQLAlchemy models
+staffly/security.py     Auth, CSRF, route protection
+staffly/repositories.py SQL access layer
+staffly/services.py     Business logic and MongoDB / AI services
+staffly/routes.py       HTTP routes and template rendering
+tests/                  Automated tests
+docs/cda/               CDA-oriented technical documentation
+```
 
 ## Local setup
 
@@ -55,6 +75,22 @@ code quality, and deployment preparation.
    flask --app app run
    ```
 
+## Docker setup
+
+To start the application with PostgreSQL and MongoDB in containers:
+
+```bash
+docker compose up --build
+```
+
+The web application is then available at `http://localhost:8000`.
+
+To stop the stack:
+
+```bash
+docker compose down
+```
+
 ## Optional AI and NoSQL setup
 
 - `MONGO_URI` enables MongoDB history for AI suggestions
@@ -82,3 +118,37 @@ black app.py tests
 flake8 app.py tests
 pytest
 ```
+
+You can also use the provided `Makefile`:
+
+```bash
+make format
+make lint
+make test
+```
+
+## Continuous integration
+
+The project includes a GitHub Actions workflow in:
+
+```txt
+.github/workflows/ci.yml
+```
+
+The pipeline runs:
+
+- Black
+- Flake8
+- Pytest
+
+The CI job starts a PostgreSQL service so the test suite can run in a setup
+closer to production.
+
+## CDA-oriented documentation
+
+Additional technical documentation is available in:
+
+- `docs/cda/architecture-couches.md`
+- `docs/cda/plan-tests-cda.md`
+- `docs/cda/devops-cda.md`
+- `docs/cda/sequence-diagrams.md`
